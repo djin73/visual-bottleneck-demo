@@ -16,7 +16,10 @@ function initialize(visualizer, dataset) {
     let datapoint = new Datapoint(task_id, step_id, null);
     visualizer.visualize(datapoint, dataset);
   } else {
-    let curr_datapoint = dataset.sample_datapoint();
+    // let curr_datapoint = dataset.sample_datapoint();
+    // don't randomly sample for now
+    let curr_datapoint = new Datapoint(0, null, null);
+
     visualizer.visualize(curr_datapoint, dataset);
   }
 
