@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>wikiHow Hierarchy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/basic.css" />
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="vendor/css/font-awesome.min.css" />
+    <script src="vendor/js/jquery.min.js"></script>
+    <script src="vendor/js/jsrender.min.js"></script>
+    <script src="vendor/js/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <div class="mask active" id="loading-mask">
+      <div class="mask-inner">
+        <h2 padding="30px"><i class="fa fa-spinner fa-spin"></i>&ThinSpace; Loading</h2>
+        <hr />
+        <p>
+          When you're following instructions, you may want to see more detailed instructions about a step.
+          In the terms of natural language processing, this reflects the hierarchical relationship among procedural events, where each step can have many sub-steps.
+        </p>
+        <p>
+          This web demo accompanies our
+          <a href="https://arxiv.org/abs/2203.07264" target="_blanks">ACL 2022 paper</a>
+          and lets you explore the procedural hierarchy discovered from <a href="www.wikihow.com" target="_blank">wikiHow</a>.
+          You can start with a random procedure by clicking <a href="/">"I'm feeling lucky"</a> or go for a particular one using the search bar.
+          You can expand upon the steps when available to see more detailed instructions, which are predicted by our models with a confidence score.
+        </p>
+      </div>
+    </div>
+    <nav>
+      <div id="title">
+        <a href="/">wikiHow Hierarchy</a>
+      </div>
+      <div class="separator"></div>
+      <a class="link" href="/about.html">About</a>
+      <div class="separator"></div>
+      <a class="link" href="https://arxiv.org/abs/2203.07264" target="_blank">Our Paper</a>
+      <div class="separator"></div>
+      <a class="link" href="/">I'm feeling lucky!</a>
+      <div class="separator"></div>
+      <span>Current Task ID: <span id="curr-task-id"></span></span>
+      <div class="separator"></div>
+      <form id="task-id-form">
+        <input name="task_id" placeholder="Jump to task ID..." />
+        <button type="submit">Go to</button>
+      </form>
+      <div class="separator"></div>
+      <form id="nav-search-form" method="GET" action="search.html">
+        <input name="search" placeholder="Type something to search..." />
+        <button type="submit">
+          <i class="fa fa-search"></i>
+        </buttom>
+      </form>
+    </nav>
+    <main>
+      <svg id="base-canvas"></svg>
+      <div id="left" class="card-column">
+        <div id="left-inner" class="card-column-inner"></div>
+      </div>
+      <svg id="left-line-canvas" class="line-canvas"></svg>
+      <div id="middle" class="card-column">
+        <div id="middle-inner" class="card-column-inner"></div>
+      </div>
+      <svg id="right-line-canvas" class="line-canvas"></svg>
+      <div id="right" class="card-column">
+        <div id="right-inner" class="card-column-inner"></div>
+      </div>
+    </main>
+    <footer>&copy; 2022 Ziyang Li; licensed under CC BY-NC 4.0</footer>
+    <script id="history-card" type="text/x-jsrender">
+      <div class="card history-card" id="{{:elem_id}}">
+        <div class="card-right">
+          <div style="margin-bottom: 5px">
+            <i class="fa fa-caret-left"></i>
+            Back
+          </div>
+          <div class="card-header">
+            <div class="card-title">{{:title}}</div>
+            <div class="card-id">
+              <div>{{:task_id}}</div>
+            </div>
+            <div class="card-section-caption-anchor">
+              <span class="card-section-caption-anchor-circle active"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </script>
+    <script id="card" type="text/x-jsrender">
+      <div class="card" id="{{:elem_id}}">
+        <div class="card-left">
+          <div class="card-left-anchor"></div>
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="card-title">{{:title}}</div>
+            <div class="card-id">
+              <div>{{:task_id}}</div>
+            </div>
+          </div>
+          <div class="card-tags">{{for tags}}
+            <div class="card-tag-outer">
+              <a class="card-tag" href="/search.html?category={{:id}}">{{:name}}</a>
+            </div>
+          {{/for}}</div>
+          <div class="card-body">
+            <ol class="card-section-captions">{{for captions}}
+              <li id="{{:elem_id}}">
+                <a class="card-section-caption">
+                  <!-- <div class="card-section-caption-title">{{:#index + 1}}. {{:caption}}</div> MODIFIED W IMAGES BELOW -->
+                  <div class="card-section-caption-title">
+                    {{:#index + 1}}. 
+                    {{if caption.includes("image")}}
+                      <img width=50px src=data/images/{{:caption}}>
+                    {{else}}
+                      {{:caption}}
+                    {{/if}}
+                  </div>
+                  <div class="card-section-caption-anchor">
+                    <span class="card-section-caption-anchor-circle{{if has_sub_steps}} active{{/if}}"></span>
+                  </div>
+                </a>
+              </li>
+            {{/for}}</ol>
+            {{if has_url}}
+              <div class="wikihow-link-holder">
+                <a href="{{:url}}" target="_blank">
+                  <i class="fa fa-external-link"></i>Go To wikiHow
+                </a>
+              </div>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </script>
+    <script id="concept-card" type="text/x-jsrender">
+      <div class="card" id="{{:elem_id}}">
+        <div class="card-left">
+          <div class="card-left-anchor"></div>
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="card-title">{{:title}}</div>
+            <div class="card-id">
+              <div>{{:task_id}}</div>
+            </div>
+          </div>
+          <div class="card-tags">{{for tags}}
+            <div class="card-tag-outer">
+              <a class="card-tag" href="/search.html?category={{:id}}">{{:name}}</a>
+            </div>
+          {{/for}}</div>
+          <div class="concept-card-body">
+            {{for captions}}
+              <div id="{{:elem_id}}">
+                <a class="card-section-caption">
+                  <div class="card-section-caption-title">
+                    {{if caption.includes("image")}}
+                      <img width=70px src=data/images/{{:caption}}>
+                    {{else}}
+                      {{:caption}}
+                    {{/if}}
+                  </div>
+                  <div class="card-section-caption-anchor">
+                    <span class="card-section-caption-anchor-circle{{if has_sub_steps}} active{{/if}}"></span>
+                  </div>
+                </a>
+              </div>
+            {{/for}}
+          </div>
+        </div>
+      </div>
+    </script>
+    <script id="ground-truth-card" type="text/x-jsrender">
+      <div class="card">
+        <div class="card-left">
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="card-title">Example image:</div>
+          </div>
+          <img width=200px src=data/images/{{:img_path}}>
+        </div>
+      </div>
+    </script>
+    <script src="js/dataset.js"></script>
+    <script src="js/index.js"></script>
+  </body>
+</html>
