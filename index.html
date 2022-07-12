@@ -180,7 +180,13 @@
           <div class="card-header">
             <div class="card-title">Example image:</div>
           </div>
-          <img width=200px src=data/images/{{:img_path}}>
+          <div class="concept-card-body">
+            {{for img_paths}}
+              <div class="card-section-caption-title">
+                <img width=70px src=data/images/{{:path}}>
+              </div>
+            {{/for}}
+          </div>
         </div>
       </div>
     </script>

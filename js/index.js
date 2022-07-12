@@ -184,7 +184,11 @@ class Visualizer {
     let cls_name = dataset.step_predictions[`${step_id}`]["name"];
     $("#right-inner").append(
       this.ground_truth_card_template.render({
-        img_path: dataset.class_ground_truth[cls_name],
+        img_paths: dataset.class_ground_truth[cls_name].map((url) => {
+          return {
+            path: url,
+          };
+        }),
       })
     );
 

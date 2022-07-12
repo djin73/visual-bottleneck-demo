@@ -63,6 +63,7 @@ with open("class2images_train.p", "rb") as f:
     class2images_train = pickle.load(f)
 
 class_ground_truth = {
-    cls: images[0] + ".jpg" for cls, images in class2images_train.items()
+    cls: [img + ".jpg" for img in images[0:10]]
+    for cls, images in class2images_train.items()
 }
 json.dump(class_ground_truth, open("data/class_to_truth.json", "w"))
