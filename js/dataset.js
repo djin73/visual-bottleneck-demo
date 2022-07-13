@@ -3,14 +3,20 @@ function load_data(callback) {
     $.getJSON("data/copy_step_goals.json", function (step_goals) {
       $.getJSON("data/copy_step_predictions.json", function (step_predictions) {
         $.getJSON("data/class_to_truth.json", function (class_ground_truth) {
-          callback(
-            new Dataset(
-              category_list,
-              step_goals,
-              step_predictions,
-              class_ground_truth
-            )
-          );
+          $.getJSON("data/classes.json", function (classes_data) {
+            $.getJSON("data/concepts.json", function (concepts_data) {
+              callback(
+                new Dataset(
+                  category_list,
+                  step_goals,
+                  step_predictions,
+                  class_ground_truth,
+                  classes_data,
+                  concepts_data
+                )
+              );
+            });
+          });
         });
       });
     });
@@ -18,11 +24,20 @@ function load_data(callback) {
 }
 
 class Dataset {
-  constructor(category_list, step_goals, step_predictions, class_ground_truth) {
+  constructor(
+    category_list,
+    step_goals,
+    step_predictions,
+    class_ground_truth,
+    classes_data,
+    concepts_data
+  ) {
     this.category_list = category_list;
     this.step_goals = step_goals;
     this.step_predictions = step_predictions;
     this.class_ground_truth = class_ground_truth;
+    this.classes_data = classes_data;
+    this.concepts_data = concepts_data;
   }
 
   num_tasks() {
@@ -50,7 +65,7 @@ class Dataset {
           let pred = this.step_predictions[`${c}`];
           return {
             caption: pred.name,
-            step_id: c,
+            class_id: c,
             has_sub_steps: pred.pred.length > 0,
             elem_id: `${caption_id_prefix}-caption-${c}`,
           };
@@ -58,6 +73,36 @@ class Dataset {
           return { caption: c };
         }
       }),
+    };
+  }
+
+  get_classes_card_data(datapoint, location_prefix) {
+    // TODO support multiple datasets/bottlenecks
+    let classes_data = this.classes_data;
+    return {
+      title: "Flower 102 dataset", // TODO edit
+      elem_id: `${location_prefix}-card`,
+      classes: Object.entries(classes_data).map(([class_id, class_info]) => {
+        return {
+          category: class_info["name"],
+          elem_id: `${location_prefix}-category-${class_id}`,
+          class_id: class_id,
+        };
+      }),
+
+      // classes: task["caption"].map((c) => {
+      //   if (Number.isInteger(c)) {
+      //     let pred = this.step_predictions[`${c}`];
+      //     return {
+      //       caption: pred.name,
+      //       step_id: c,
+      //       has_sub_steps: pred.pred.length > 0,
+      //       elem_id: `${location_prefix}-caption-${c}`,
+      //     };
+      //   } else {
+      //     return { caption: c };
+      //   }
+      // }),
     };
   }
 }

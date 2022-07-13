@@ -10,16 +10,18 @@ $(document).ready(function () {
 function initialize(visualizer, dataset) {
   let query_string = window.location.search;
   let url_params = new URLSearchParams(query_string);
+
   if (url_params.has("task_id")) {
     let task_id = url_params.get("task_id");
-    let step_id = url_params.has("step_id") ? url_params.get("step_id") : null;
-    let datapoint = new Datapoint(task_id, step_id, null);
+    let class_id = url_params.has("class_id")
+      ? url_params.get("class_id")
+      : null;
+    let datapoint = new Datapoint(task_id, class_id, null);
     visualizer.visualize(datapoint, dataset);
   } else {
     // let curr_datapoint = dataset.sample_datapoint();
     // don't randomly sample for now
     let curr_datapoint = new Datapoint(0, null, null);
-
     visualizer.visualize(curr_datapoint, dataset);
   }
 
@@ -34,6 +36,7 @@ class Visualizer {
     this.history_card_template = $.templates("#history-card");
     this.concept_card_template = $.templates("#concept-card");
     this.ground_truth_card_template = $.templates("#ground-truth-card");
+    this.classes_card_template = $.templates("#classes-card");
   }
 
   visualize(datapoint, dataset) {
@@ -41,36 +44,32 @@ class Visualizer {
     $("#middle").unbind("scroll");
     $("#right").unbind("scroll");
     $("#curr-task-id").text(datapoint.task_id);
-
     // Push history
     var new_url = new URL(window.location.href);
     new_url.search = `?task_id=${datapoint.task_id}`;
     window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Get the data
-    let data = dataset.get_card_data(datapoint, "middle");
+    let data = dataset.get_classes_card_data(datapoint, "middle");
+    // let data = dataset.get_card_data(datapoint, "middle");
 
     // Render the object onto the page
-    $("#middle-inner").html(this.card_template.render(data));
-
+    $("#middle-inner").html(this.classes_card_template.render(data));
     // Setup the callbacks
-    data.captions.forEach((caption) => {
-      let step_id = caption.step_id;
-      if (step_id && caption.has_sub_steps) {
-        $(`#middle-caption-${step_id}`).click(() => {
-          let new_datapoint = new Datapoint(
-            datapoint.task_id,
-            step_id,
-            datapoint.parent_datapoint
-          );
-          this.visualize(new_datapoint, dataset);
-        });
-      }
+    data.classes.forEach(({ class_id, category }) => {
+      $(`#middle-category-${class_id}`).click(() => {
+        let new_datapoint = new Datapoint(
+          datapoint.task_id, // TODO change later
+          class_id,
+          datapoint.parent_datapoint
+        );
+        this.visualize(new_datapoint, dataset);
+      });
     });
 
     // If the step id is present, directly visualize that step
-    if (datapoint.step_id != null) {
-      this.visualize_step(datapoint, datapoint.step_id, dataset);
+    if (datapoint.class_id != null) {
+      this.visualize_step(datapoint, datapoint.class_id, dataset);
     } else {
       $("#right-inner").html("");
       $("#right-line-canvas").attr("style", "display: none");
@@ -159,17 +158,17 @@ class Visualizer {
     draw();
   }
 
-  visualize_step(parent_datapoint, step_id, dataset) {
+  visualize_step(parent_datapoint, class_id, dataset) {
     // Open the right canvas
     $("#right-line-canvas").attr("style", "display: block");
 
     // Push history
     var new_url = new URL(window.location.href);
-    new_url.search = `?task_id=${parent_datapoint.task_id}&step_id=${step_id}`;
+    new_url.search = `?task_id=${parent_datapoint.task_id}&class_id=${class_id}`;
     window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Highlight the step in the left
-    $(`#middle-caption-${step_id}`)
+    $(`#middle-category-${class_id}`) //TODo was middle-
       .addClass("active")
       .siblings()
       .removeClass("active");
@@ -178,10 +177,10 @@ class Visualizer {
     $("#right-inner").html("");
 
     // Get all the predictions
-    let predictions = dataset.step_predictions[`${step_id}`]["pred"];
+    let predictions = dataset.step_predictions[`${class_id}`]["pred"];
 
     // add ground truth card
-    let cls_name = dataset.step_predictions[`${step_id}`]["name"];
+    let cls_name = dataset.step_predictions[`${class_id}`]["name"];
     $("#right-inner").append(
       this.ground_truth_card_template.render({
         img_paths: dataset.class_ground_truth[cls_name].map((url) => {
@@ -202,12 +201,12 @@ class Visualizer {
 
       // Setup the callbacks
       data.captions.forEach((caption) => {
-        let step_id = caption.step_id;
-        if (step_id && caption.has_sub_steps) {
-          $(`#right-${task_id}-caption-${step_id}`).click(() => {
+        let class_id = caption.class_id;
+        if (class_id && caption.has_sub_steps) {
+          $(`#right-${task_id}-caption-${class_id}`).click(() => {
             let subtask_datapoint = new Datapoint(
               task_id,
-              step_id,
+              class_id,
               parent_datapoint
             );
             this.visualize(subtask_datapoint, dataset);
@@ -228,7 +227,7 @@ class Visualizer {
 
       // Get middle element
       let middle_elem = $(
-        `#middle-caption-${step_id} .card-section-caption-anchor-circle`
+        `#middle-category-${class_id} .card-section-caption-anchor-circle`
       );
       let middle_elem_position = middle_elem.position();
       let middle_x =
@@ -271,9 +270,17 @@ class Visualizer {
 }
 
 class Datapoint {
-  constructor(task_id, step_id, parent_datapoint) {
+  constructor(task_id, class_id, parent_datapoint) {
     this.task_id = `${task_id}`;
-    this.step_id = step_id;
+    this.class_id = class_id;
     this.parent_datapoint = parent_datapoint;
+  }
+}
+
+class Datapoint2 {
+  // TODO: call this something other than model_id?
+  constructor(model_id, class_id) {
+    this.class_id = class_id;
+    this.model_id = model_id;
   }
 }

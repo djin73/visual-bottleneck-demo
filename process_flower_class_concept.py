@@ -10,7 +10,7 @@ data = cls_concept["data"]
 reorganized_cls_concept = {
     i: {
         "name": data[i][0],
-        "pred": [
+        "concepts": [
             [data[i][concept_idx], data[i][concept_idx - 1]]
             for concept_idx in range(4, len(data[i]), 3)
         ],
@@ -29,12 +29,8 @@ with open("concept2img.p", "rb") as f2:
 
 reorganized_concept_image = {
     id: {
-        "task": concept,
-        "category": [],
-        "caption": [img_url.split("/")[-1] for img_url in concept2img[concept]],
-        "section": {},
-        "section_name": "parts",
-        "url": "https://www.wikihow.com/Choose-the-Best-VPN",
+        "name": concept,
+        "images": [img_url.split("/")[-1] for img_url in concept2img[concept]],
     }
     for id, concept in concept_id_map.items()
 }
@@ -55,8 +51,10 @@ print(reorganized_cls_concept)
 # print(sorted(concept_id_map.keys()))
 print(reorganized_concept_image)
 
-json.dump(reorganized_cls_concept, open("data/copy_step_predictions.json", "w"))
-json.dump(reorganized_concept_image, open("data/copy_step_goals.json", "w"))
+# json.dump(reorganized_cls_concept, open("data/copy_step_predictions.json", "w"))
+json.dump(reorganized_cls_concept, open("data/classes.json", "w"))
+# json.dump(reorganized_concept_image, open("data/copy_step_goals.json", "w"))
+json.dump(reorganized_concept_image, open("data/concepts.json", "w"))
 
 # ----- determine mappings from classes to ground truth images
 with open("class2images_train.p", "rb") as f:
