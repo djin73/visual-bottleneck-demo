@@ -36,7 +36,7 @@
       <div class="separator"></div>
       <a class="link" href="/about.html">About</a>
       <div class="separator"></div>
-      <a class="link" href="https://arxiv.org/abs/2203.07264" target="_blank">Our Paper</a>
+      <a class="link" target="_blank">Our Paper</a>
       <div class="separator"></div>
       <a class="link" href="/">I'm feeling lucky!</a>
       <div class="separator"></div>
@@ -88,53 +88,6 @@
         </div>
       </div>
     </script>
-    <script id="card" type="text/x-jsrender">
-      <div class="card" id="{{:elem_id}}">
-        <div class="card-left">
-          <div class="card-left-anchor"></div>
-        </div>
-        <div class="card-right">
-          <div class="card-header">
-            <div class="card-title">{{:title}}</div>
-            <div class="card-id">
-              <div>{{:task_id}}</div>
-            </div>
-          </div>
-          <div class="card-tags">{{for tags}}
-            <div class="card-tag-outer">
-              <a class="card-tag" href="/search.html?category={{:id}}">{{:name}}</a>
-            </div>
-          {{/for}}</div>
-          <div class="card-body">
-            <ol class="card-section-captions">{{for captions}}
-              <li id="{{:elem_id}}">
-                <a class="card-section-caption">
-                  <!-- <div class="card-section-caption-title">{{:#index + 1}}. {{:caption}}</div> MODIFIED W IMAGES BELOW -->
-                  <div class="card-section-caption-title">
-                    {{:#index + 1}}. 
-                    {{if caption.includes("image")}}
-                      <img width=50px src=data/images/{{:caption}}>
-                    {{else}}
-                      {{:caption}}
-                    {{/if}}
-                  </div>
-                  <div class="card-section-caption-anchor">
-                    <span class="card-section-caption-anchor-circle{{if has_sub_steps}} active{{/if}}"></span>
-                  </div>
-                </a>
-              </li>
-            {{/for}}</ol>
-            {{if has_url}}
-              <div class="wikihow-link-holder">
-                <a href="{{:url}}" target="_blank">
-                  <i class="fa fa-external-link"></i>Go To wikiHow
-                </a>
-              </div>
-            {{/if}}
-          </div>
-        </div>
-      </div>
-    </script>
     <script id="classes-card" type="text/x-jsrender">
       <div class="card" id="{{:elem_id}}">
         <div class="card-left">
@@ -143,16 +96,13 @@
         <div class="card-right">
           <div class="card-header">
             <div class="card-title">{{:title}}</div>
-            
           </div>
-          
           <div class="card-body">
             <ol class="card-section-captions">{{for classes}}
               <li id="{{:elem_id}}">
                 <a class="card-section-caption">
                   <div class="card-section-caption-title">
                     {{:#index + 1}}. {{:category}}
-                    
                   </div>
                   <div class="card-section-caption-anchor">
                     <span class="card-section-caption-anchor-circle active"></span>
@@ -174,30 +124,16 @@
           <div class="card-header">
             <div class="card-title">{{:title}}</div>
             <div class="card-id">
-              <div>{{:task_id}}</div>
+              <div>{{:concept_id}}</div>
             </div>
           </div>
-          <div class="card-tags">{{for tags}}
-            <div class="card-tag-outer">
-              <a class="card-tag" href="/search.html?category={{:id}}">{{:name}}</a>
-            </div>
-          {{/for}}</div>
           <div class="concept-card-body">
-            {{for captions}}
-              <div id="{{:elem_id}}">
+            {{for images}}
                 <a class="card-section-caption">
                   <div class="card-section-caption-title">
-                    {{if caption.includes("image")}}
-                      <img width=70px src=data/images/{{:caption}}>
-                    {{else}}
-                      {{:caption}}
-                    {{/if}}
-                  </div>
-                  <div class="card-section-caption-anchor">
-                    <span class="card-section-caption-anchor-circle{{if has_sub_steps}} active{{/if}}"></span>
+                    <img width=70px src=data/images/{{:path}}>
                   </div>
                 </a>
-              </div>
             {{/for}}
           </div>
         </div>

@@ -1,6 +1,7 @@
 const LINE_CANVAS_PADDING = 20;
 
 $(document).ready(function () {
+  //TODO change this to load multiple datasets
   load_data(function (dataset) {
     let visualizer = new Visualizer();
     initialize(visualizer, dataset);
@@ -9,21 +10,20 @@ $(document).ready(function () {
 
 function initialize(visualizer, dataset) {
   let query_string = window.location.search;
-  let url_params = new URLSearchParams(query_string);
+  // let url_params = new URLSearchParams(query_string);
 
-  if (url_params.has("task_id")) {
-    let task_id = url_params.get("task_id");
-    let class_id = url_params.has("class_id")
-      ? url_params.get("class_id")
-      : null;
-    let datapoint = new Datapoint(task_id, class_id, null);
-    visualizer.visualize(datapoint, dataset);
-  } else {
-    // let curr_datapoint = dataset.sample_datapoint();
-    // don't randomly sample for now
-    let curr_datapoint = new Datapoint(0, null, null);
-    visualizer.visualize(curr_datapoint, dataset);
-  }
+  // if (url_params.has("task_id")) {
+  //   let task_id = url_params.get("task_id");
+  //   let class_id = url_params.has("class_id")
+  //     ? url_params.get("class_id")
+  //     : null;
+  //   let datapoint = new Datapoint(task_id, class_id, null);
+  //   visualizer.visualize(datapoint, dataset);
+  // } else {
+  // let curr_datapoint = dataset.sample_datapoint();
+  // don't randomly sample for now
+  visualizer.visualize(null, dataset);
+  // }
 
   // Remove the loading mask
   $("#loading-mask").removeClass("active");
@@ -39,52 +39,48 @@ class Visualizer {
     this.classes_card_template = $.templates("#classes-card");
   }
 
-  visualize(datapoint, dataset) {
+  visualize(cur_class_id, dataset) {
     $(window).off("resize");
     $("#middle").unbind("scroll");
     $("#right").unbind("scroll");
-    $("#curr-task-id").text(datapoint.task_id);
-    // Push history
-    var new_url = new URL(window.location.href);
-    new_url.search = `?task_id=${datapoint.task_id}`;
-    window.history.replaceState({ path: new_url.href }, "", new_url.href);
+    $("#curr-task-id").text("0"); //TODO temporary
+    // // Push history
+    // var new_url = new URL(window.location.href);
+    // new_url.search = `?task_id=${datapoint.task_id}`;
+    // window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Get the data
-    let data = dataset.get_classes_card_data(datapoint, "middle");
+    let data = dataset.get_classes_card_data("middle");
     // let data = dataset.get_card_data(datapoint, "middle");
 
     // Render the object onto the page
     $("#middle-inner").html(this.classes_card_template.render(data));
     // Setup the callbacks
+
     data.classes.forEach(({ class_id, category }) => {
       $(`#middle-category-${class_id}`).click(() => {
-        let new_datapoint = new Datapoint(
-          datapoint.task_id, // TODO change later
-          class_id,
-          datapoint.parent_datapoint
-        );
-        this.visualize(new_datapoint, dataset);
+        this.visualize(class_id, dataset);
       });
     });
 
     // If the step id is present, directly visualize that step
-    if (datapoint.class_id != null) {
-      this.visualize_step(datapoint, datapoint.class_id, dataset);
+    if (cur_class_id != null) {
+      this.visualize_step(cur_class_id, dataset);
     } else {
       $("#right-inner").html("");
       $("#right-line-canvas").attr("style", "display: none");
     }
 
-    // If the previous datapoint is present, visualize the parent
-    if (datapoint.parent_datapoint != null) {
-      this.visualize_parent(datapoint.parent_datapoint, dataset);
-    } else {
-      $("#left-inner").html("");
-      $("#left-line-canvas").attr("style", "display: none");
-    }
+    // // If the previous datapoint is present, visualize the parent
+    // if (datapoint.parent_datapoint != null) {
+    //   this.visualize_parent(datapoint.parent_datapoint, dataset);
+    // } else {
+    $("#left-inner").html("");
+    $("#left-line-canvas").attr("style", "display: none");
+    // }
   }
-
-  visualize_parent(parent_datapoint, dataset) {
+  /*
+  visualize_parent(parent_datapoint,  dataset) {
     // Open the left canvas
     $("#left-line-canvas").attr("style", "display: block");
 
@@ -157,14 +153,15 @@ class Visualizer {
     $("#middle").scroll(draw);
     draw();
   }
+*/
 
-  visualize_step(parent_datapoint, class_id, dataset) {
+  visualize_step(class_id, dataset) {
     // Open the right canvas
     $("#right-line-canvas").attr("style", "display: block");
 
     // Push history
     var new_url = new URL(window.location.href);
-    new_url.search = `?task_id=${parent_datapoint.task_id}&class_id=${class_id}`;
+    new_url.search = `?class_id=${class_id}`;
     window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Highlight the step in the left
@@ -176,11 +173,9 @@ class Visualizer {
     // Clear the right
     $("#right-inner").html("");
 
-    // Get all the predictions
-    let predictions = dataset.step_predictions[`${class_id}`]["pred"];
-
+    const cur_class_data = dataset.classes_data[`${class_id}`]; //TODO new
     // add ground truth card
-    let cls_name = dataset.step_predictions[`${class_id}`]["name"];
+    let cls_name = cur_class_data["name"];
     $("#right-inner").append(
       this.ground_truth_card_template.render({
         img_paths: dataset.class_ground_truth[cls_name].map((url) => {
@@ -191,28 +186,14 @@ class Visualizer {
       })
     );
 
-    // For each prediction
-    predictions.forEach((prediction) => {
-      let task_id = prediction[0];
-      let datapoint = new Datapoint(task_id, null, null);
-      let data = dataset.get_card_data(datapoint, `right-${task_id}`);
+    // For each concept, render the concept card
+    const concepts = cur_class_data["concepts"];
+    concepts.forEach(([concept_id]) => {
+      let data = dataset.get_concept_card_data(
+        concept_id,
+        `right-${concept_id}`
+      );
       $("#right-inner").append(this.concept_card_template.render(data));
-      // $("#right-inner").append(this.card_template.render(data));
-
-      // Setup the callbacks
-      data.captions.forEach((caption) => {
-        let class_id = caption.class_id;
-        if (class_id && caption.has_sub_steps) {
-          $(`#right-${task_id}-caption-${class_id}`).click(() => {
-            let subtask_datapoint = new Datapoint(
-              task_id,
-              class_id,
-              parent_datapoint
-            );
-            this.visualize(subtask_datapoint, dataset);
-          });
-        }
-      });
     });
 
     // Setup a scroll callback
@@ -233,8 +214,10 @@ class Visualizer {
       let middle_x =
         middle_elem_position.left - svg_x + 6 + LINE_CANVAS_PADDING;
       let middle_y = middle_elem_position.top - svg_y + 6;
-      predictions.forEach((p) => {
-        let right_elem = $(`#right-${p[0]}-card .card-left-anchor`);
+
+      // draw lines to each concept
+      concepts.forEach(([concept_id, wt]) => {
+        let right_elem = $(`#right-${concept_id}-card .card-left-anchor`);
         let right_elem_position = right_elem.position();
         let right_x =
           right_elem_position.left - svg_x + 6 + LINE_CANVAS_PADDING;
@@ -254,7 +237,7 @@ class Visualizer {
         let text_y = right_y > middle_y ? right_y + 20 : right_y - 10;
         svg
           .append("text")
-          .text(`${p[1]}`.substring(0, 7))
+          .text(`${wt}`.substring(0, 7))
           .style("font-size", "18px")
           .style("font-weight", "bold")
           .style("fill", "red")
@@ -274,13 +257,5 @@ class Datapoint {
     this.task_id = `${task_id}`;
     this.class_id = class_id;
     this.parent_datapoint = parent_datapoint;
-  }
-}
-
-class Datapoint2 {
-  // TODO: call this something other than model_id?
-  constructor(model_id, class_id) {
-    this.class_id = class_id;
-    this.model_id = model_id;
   }
 }
