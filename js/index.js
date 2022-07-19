@@ -5,7 +5,7 @@ $(document).ready(function () {
   const query_string = window.location.search;
   const url_params = new URLSearchParams(query_string);
   let dataset_name = url_params.get("dataset");
-  if (dataset_name === "") dataset_name = "flower";
+  if (!dataset_name) dataset_name = "flower";
   load_data(dataset_name, (dataset) => {
     let visualizer = new Visualizer();
     initialize(visualizer, dataset);
