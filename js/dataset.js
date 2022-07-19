@@ -2,13 +2,13 @@ function load_data(path, callback) {
   $.getJSON(`data/${path}/class_to_truth.json`, function (class_ground_truth) {
     $.getJSON(`data/${path}/classes.json`, function (classes_data) {
       $.getJSON(`data/${path}/concepts.json`, function (concepts_data) {
-        $.getJSON(
-          `data/${path}/concept2cls_prior.json`,
-          (prior_data, textStatus) => {
-            let concept_to_prior = null;
-            if (textStatus === "success") {
-              concept_to_prior = prior_data;
-            }
+        let concept_to_prior = null;
+        $.getJSON(`data/${path}/concept2cls_prior.json`)
+          .done((prior_data) => {
+            concept_to_prior = prior_data;
+          })
+          .fail(() => console.log("prior data does not exist"))
+          .always(() => {
             callback(
               new Dataset(
                 class_ground_truth,
@@ -18,8 +18,26 @@ function load_data(path, callback) {
                 path
               )
             );
-          }
-        );
+          });
+
+        // $.getJSON(
+        //   `data/${path}/concept2cls_prior.json`,
+        //   (prior_data, textStatus) => {
+        //     let concept_to_prior = null;
+        //     if (textStatus === "success") {
+        //       concept_to_prior = prior_data;
+        //     }
+        //     callback(
+        //       new Dataset(
+        //         class_ground_truth,
+        //         classes_data,
+        //         concepts_data,
+        //         concept_to_prior,
+        //         path
+        //       )
+        //     );
+        //   }
+        // );
       });
     });
   });
@@ -40,11 +58,13 @@ class Dataset {
     this.name = name; // TODO change?
 
     // TODO remove
-    for (const class_id in classes_data) {
-      classes_data[class_id]["concepts"].forEach(([concept_id]) => {
-        if (concept_to_prior[concept_id] === parseInt(class_id))
-          console.log(class_id, concept_id);
-      });
+    if (concept_to_prior) {
+      for (const class_id in classes_data) {
+        classes_data[class_id]["concepts"].forEach(([concept_id]) => {
+          if (concept_to_prior[concept_id] === parseInt(class_id))
+            console.log(class_id, concept_id);
+        });
+      }
     }
   }
 

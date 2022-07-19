@@ -198,7 +198,10 @@ class Visualizer {
         `right-${concept_id}`
       );
       $("#right-inner").append(this.concept_card_template.render(data));
-      if (dataset.concept_to_prior[concept_id] === parseInt(class_id))
+      if (
+        dataset.concept_to_prior &&
+        dataset.concept_to_prior[concept_id] === parseInt(class_id)
+      )
         $(`#concept-label-${concept_id}`).css("color", "red");
     });
 
