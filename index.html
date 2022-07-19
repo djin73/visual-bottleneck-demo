@@ -40,10 +40,10 @@
       <div class="separator"></div>
       <a class="link" href="/">I'm feeling lucky!</a>
       <div class="separator"></div>
-      <span>Current Task ID: <span id="curr-task-id"></span></span>
+      <span>Current Dataset: <span id="curr-dataset"></span></span>
       <div class="separator"></div>
-      <form id="task-id-form">
-        <input name="task_id" placeholder="Jump to task ID..." />
+      <form id="dataset-form">
+        <input name="dataset" placeholder="Jump to dataset..." />
         <button type="submit">Go to</button>
       </form>
       <div class="separator"></div>
@@ -124,14 +124,14 @@
           <div class="card-header">
             <div class="card-title">{{:title}}</div>
             <div class="card-id">
-              <div>{{:concept_id}}</div>
+              <div id="concept-label-{{:concept_id}}">{{:concept_id}}</div>
             </div>
           </div>
           <div class="concept-card-body">
             {{for images}}
                 <a class="card-section-caption">
                   <div class="card-section-caption-title">
-                    <img width=70px src=data/images/{{:path}}>
+                    <img width=70px src=data/{{:path}}>
                   </div>
                 </a>
             {{/for}}
@@ -145,12 +145,12 @@
         </div>
         <div class="card-right">
           <div class="card-header">
-            <div class="card-title">Example image:</div>
+            <div class="card-title">Example images:</div>
           </div>
           <div class="concept-card-body">
             {{for img_paths}}
               <div class="card-section-caption-title">
-                <img width=70px src=data/images/{{:path}}>
+                <img width=70px src=data/{{:path}}>
               </div>
             {{/for}}
           </div>

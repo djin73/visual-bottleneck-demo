@@ -2,7 +2,11 @@ const LINE_CANVAS_PADDING = 20;
 
 $(document).ready(function () {
   //TODO change this to load multiple datasets
-  load_data(function (dataset) {
+  const query_string = window.location.search;
+  const url_params = new URLSearchParams(query_string);
+  let dataset_name = url_params.get("dataset");
+  if (dataset_name === "") dataset_name = "flower";
+  load_data(dataset_name, (dataset) => {
     let visualizer = new Visualizer();
     initialize(visualizer, dataset);
   });
@@ -43,7 +47,7 @@ class Visualizer {
     $(window).off("resize");
     $("#middle").unbind("scroll");
     $("#right").unbind("scroll");
-    $("#curr-task-id").text("0"); //TODO temporary
+    $("#curr-dataset").text(dataset.name); //TODO temporary
     // // Push history
     // var new_url = new URL(window.location.href);
     // new_url.search = `?task_id=${datapoint.task_id}`;
@@ -161,7 +165,7 @@ class Visualizer {
 
     // Push history
     var new_url = new URL(window.location.href);
-    new_url.search = `?class_id=${class_id}`;
+    new_url.search = `?dataset=${dataset.name}&class_id=${class_id}`;
     window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Highlight the step in the left
@@ -180,7 +184,7 @@ class Visualizer {
       this.ground_truth_card_template.render({
         img_paths: dataset.class_ground_truth[cls_name].map((url) => {
           return {
-            path: url,
+            path: `${dataset.name}/images/${url}`,
           };
         }),
       })
@@ -194,6 +198,8 @@ class Visualizer {
         `right-${concept_id}`
       );
       $("#right-inner").append(this.concept_card_template.render(data));
+      if (dataset.concept_to_prior[concept_id] === parseInt(class_id))
+        $(`#concept-label-${concept_id}`).css("color", "red");
     });
 
     // Setup a scroll callback
