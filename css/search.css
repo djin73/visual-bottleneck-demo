@@ -70,7 +70,7 @@ footer {
   width: 100%;
 }
 
-.task-card {
+.bottleneck-link {
   display: flex;
   text-decoration: none;
   color: rgba(44, 44, 44, 1);
@@ -80,21 +80,21 @@ footer {
   transition: all 0.1s;
 }
 
-.task-card:hover {
+.bottleneck-link:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.task-card:active {
+.bottleneck-link:active {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.task-str {
+.bottleneck-name {
   transition: all 0.1s;
   font-weight: bold;
   flex: 1;
 }
 
-.task-card:hover .task-str {
+.bottleneck-link:hover .bottleneck-name {
   color: red;
 }
 

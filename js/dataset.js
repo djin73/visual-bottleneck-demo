@@ -1,62 +1,66 @@
-function load_data(path, callback) {
-  $.getJSON(`data/${path}/class_to_truth.json`, function (class_ground_truth) {
-    $.getJSON(`data/${path}/classes.json`, function (classes_data) {
-      $.getJSON(`data/${path}/concepts.json`, function (concepts_data) {
-        let concept_to_prior = null;
-        $.getJSON(`data/${path}/concept2cls_prior.json`)
-          .done((prior_data) => {
-            concept_to_prior = prior_data;
-          })
-          .fail(() => console.log("prior data does not exist"))
-          .always(() => {
-            callback(
-              new Dataset(
-                class_ground_truth,
-                classes_data,
-                concepts_data,
-                concept_to_prior,
-                path
-              )
+function load_data(dataset_name, bottleneck_name, callback) {
+  $.getJSON("data/datasets_and_bottlenecks.json", (datasets_list) => {
+    $.getJSON(
+      `data/${dataset_name}/${bottleneck_name}/class_to_truth.json`,
+      function (class_ground_truth) {
+        $.getJSON(
+          `data/${dataset_name}/${bottleneck_name}/classes.json`,
+          function (classes_data) {
+            $.getJSON(
+              `data/${dataset_name}/${bottleneck_name}/concepts.json`,
+              function (concepts_data) {
+                let concept_to_prior = null;
+                $.getJSON(
+                  `data/${dataset_name}/${bottleneck_name}/concept2cls_prior.json`
+                )
+                  .done((prior_data) => {
+                    concept_to_prior = prior_data;
+                  })
+                  .fail(() => console.log("prior data does not exist"))
+                  .always(() => {
+                    callback(
+                      new Dataset(
+                        datasets_list,
+                        class_ground_truth,
+                        classes_data,
+                        concepts_data,
+                        concept_to_prior,
+                        dataset_name,
+                        bottleneck_name
+                      )
+                    );
+                  });
+              }
             );
-          });
-
-        // $.getJSON(
-        //   `data/${path}/concept2cls_prior.json`,
-        //   (prior_data, textStatus) => {
-        //     let concept_to_prior = null;
-        //     if (textStatus === "success") {
-        //       concept_to_prior = prior_data;
-        //     }
-        //     callback(
-        //       new Dataset(
-        //         class_ground_truth,
-        //         classes_data,
-        //         concepts_data,
-        //         concept_to_prior,
-        //         path
-        //       )
-        //     );
-        //   }
-        // );
-      });
-    });
+          }
+        );
+      }
+    );
   });
 }
+// TODO check if the above needs to load datasets list
+
+const load_datasets_list = (callback) => {
+  $.getJSON("data/datasets_and_bottlenecks.json", callback);
+};
 
 class Dataset {
   constructor(
+    datasets_list,
     class_ground_truth,
     classes_data,
     concepts_data,
     concept_to_prior,
-    name
+    dataset_name,
+    bottleneck_name
   ) {
+    this.datasets_list = datasets_list;
     this.class_ground_truth = class_ground_truth;
     this.classes_data = classes_data;
     this.concepts_data = concepts_data;
     this.concept_to_prior = concept_to_prior;
-    this.name = name; // TODO change?
-
+    this.dataset_name = dataset_name; // TODO change?
+    this.bottleneck_name = bottleneck_name;
     // TODO remove
     if (concept_to_prior) {
       for (const class_id in classes_data) {
@@ -76,7 +80,7 @@ class Dataset {
       concept_id: concept_id,
       images: cur_concept["images"].map((img_path) => {
         return {
-          path: `${this.name}/images/${img_path}`,
+          path: `${this.dataset_name}/images/${img_path}`,
         };
       }),
     };
@@ -86,7 +90,8 @@ class Dataset {
     // TODO support multiple datasets/bottlenecks
     let classes_data = this.classes_data;
     return {
-      title: this.name, // TODO edit?
+      dataset_name: this.dataset_name, // TODO edit?
+      bottleneck_name: this.bottleneck_name,
       elem_id: `${location_prefix}-card`,
       classes: Object.entries(classes_data).map(([class_id, class_info]) => {
         return {

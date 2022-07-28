@@ -6,7 +6,10 @@ $(document).ready(function () {
   const url_params = new URLSearchParams(query_string);
   let dataset_name = url_params.get("dataset");
   if (!dataset_name) dataset_name = "flower";
-  load_data(dataset_name, (dataset) => {
+
+  let bottleneck_name = url_params.get("bottleneck");
+  if (!bottleneck_name) bottleneck_name = dataset_name + "1";
+  load_data(dataset_name, bottleneck_name, (dataset) => {
     let visualizer = new Visualizer();
     initialize(visualizer, dataset);
   });
@@ -47,11 +50,11 @@ class Visualizer {
     $(window).off("resize");
     $("#middle").unbind("scroll");
     $("#right").unbind("scroll");
-    $("#curr-dataset").text(dataset.name); //TODO temporary
-    // // Push history
-    // var new_url = new URL(window.location.href);
-    // new_url.search = `?task_id=${datapoint.task_id}`;
-    // window.history.replaceState({ path: new_url.href }, "", new_url.href);
+    $("#curr-dataset").text(dataset.dataset_name); //TODO temporary
+    // Push history
+    const new_url = new URL(window.location.href);
+    new_url.search = `?dataset=${dataset.dataset_name}&bottleneck=${dataset.bottleneck_name}`;
+    window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Get the data
     let data = dataset.get_classes_card_data("middle");
@@ -164,8 +167,8 @@ class Visualizer {
     $("#right-line-canvas").attr("style", "display: block");
 
     // Push history
-    var new_url = new URL(window.location.href);
-    new_url.search = `?dataset=${dataset.name}&class_id=${class_id}`;
+    const new_url = new URL(window.location.href);
+    new_url.search = `?dataset=${dataset.dataset_name}&bottleneck=${dataset.bottleneck_name}&class_id=${class_id}`;
     window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Highlight the step in the left
@@ -184,7 +187,7 @@ class Visualizer {
       this.ground_truth_card_template.render({
         img_paths: dataset.class_ground_truth[cls_name].map((url) => {
           return {
-            path: `${dataset.name}/images/${url}`,
+            path: `${dataset.dataset_name}/images/${url}`,
           };
         }),
       })
@@ -233,14 +236,14 @@ class Visualizer {
         let right_y = right_elem_position.top - svg_y + 6;
 
         // Draw line
-        svg
-          .append("line")
-          .style("stroke", "red")
-          .style("stroke-width", 2)
-          .attr("x1", middle_x)
-          .attr("y1", middle_y)
-          .attr("x2", right_x)
-          .attr("y2", right_y);
+        // svg
+        //   .append("line")
+        //   .style("stroke", "red")
+        //   .style("stroke-width", 2)
+        //   .attr("x1", middle_x)
+        //   .attr("y1", middle_y)
+        //   .attr("x2", right_x)
+        //   .attr("y2", right_y);
 
         // Draw a text
         let text_y = right_y > middle_y ? right_y + 20 : right_y - 10;

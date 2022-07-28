@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>wikiHow Hierarchy - Search</title>
+    <title>Visual Bottleneck Demo - Search</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/basic.css" />
     <link rel="stylesheet" href="css/search.css" />
@@ -13,7 +13,7 @@
   <body>
     <nav>
       <div id="title">
-        <a href="/">wikiHow Hierarchy - Search</a>
+        <a href="/">Visual Bottleneck Demo - Search</a>
       </div>
       <div class="separator"></div>
       <a class="link" href="/about.html">About</a>
@@ -25,7 +25,7 @@
     </nav>
     <main>
       <form id="search-form" action="search.html">
-        <div id="search-form-title">Search wikiHow Hierarchy</div>
+        <div id="search-form-title">Search for bottlenecks:</div>
         <select id="category-select" name="category">
           <option value="all">All Categories</option>
         </select>
@@ -33,8 +33,9 @@
         <button type="submit">Search!</button>
       </form>
       <div id="search-results-outer">
+        <!-- new -->
         <div id="search-message" style="display: none">Showing top <span id="search-item-count">1000</span> results...</div>
-        <div id="search-results">
+        <!-- <div id="search-results">
           <div class="search-result-column-outer">
             <div class="search-result-column" id="search-result-column-1"></div>
           </div>
@@ -44,18 +45,31 @@
           <div class="search-result-column-outer">
             <div class="search-result-column" id="search-result-column-3"></div>
           </div>
-        </div>
+        </div> -->
       </div>
     </main>
     <footer>&copy; 2022 Ziyang Li; licensed under CC BY-NC 4.0</footer>
     <script id="category-option" type="text/x-jsrender">
       <option value="{{:id}}">{{:name}}</option>
     </script>
-    <script id="task-card" type="text/x-jsrender">
-      <a class="task-card" id="{{:elem_id}}" href="/index.html?task_id={{:task_id}}">
-        <div class="task-str">{{:task}}</div>
-        <div class="task-id">{{:task_id}}</div>
+    <script id="bottleneck-link" type="text/x-jsrender">
+      <a class="bottleneck-link" id="{{:elem_id}}" href="/index.html?dataset={{:dataset_name}}&bottleneck={{:bottleneck_name}}">
+        <div class="bottleneck-name">{{:bottleneck_name}}</div>
       </a>
+    </script>
+    <script id="dataset-div" type="text/x-jsrender">
+      <h2>{{:dataset_name}}</h2>
+      <div id="{{:dataset_name}}-search-results">
+        <div class="search-result-column-outer">
+          <div class="search-result-column" id="{{:dataset_name}}-search-result-column-1"></div>
+        </div>
+        <div class="search-result-column-outer">
+          <div class="search-result-column" id="{{:dataset_name}}-search-result-column-2"></div>
+        </div>
+        <div class="search-result-column-outer">
+          <div class="search-result-column" id="{{:dataset_name}}-search-result-column-3"></div>
+        </div>
+      </div>
     </script>
     <script src="js/dataset.js"></script>
     <script src="js/search.js"></script>

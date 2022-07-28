@@ -1,17 +1,20 @@
 const MAX_COUNT = 1000;
 
-function load_category_select(dataset) {
+// TODO change nomenclature
+function load_category_select(datasets_list) {
   let category_option_template = $.templates("#category-option");
-  dataset.category_list.forEach((category_str, category_id) => {
-    $("#category-select").append(category_option_template.render({
-      id: category_id,
-      name: category_str,
-    }))
+  Object.keys(datasets_list).forEach((dset_name) => {
+    $("#category-select").append(
+      category_option_template.render({
+        id: dset_name,
+        name: dset_name,
+      })
+    );
   });
 }
 
 function load_search_parameters() {
-  let param = {search: null, category: null};
+  let param = { search: null, category: null };
   let query_string = window.location.search;
   let url_params = new URLSearchParams(query_string);
   if (url_params.has("search")) {
@@ -27,17 +30,20 @@ function load_search_parameters() {
   return param;
 }
 
-function search(parameters, dataset) {
-  // Get template
-  let task_card_template = $.templates("#task-card");
+function search(parameters, datasets_list) {
+  // Get templates
+  let bottleneck_link_template = $.templates("#bottleneck-link");
+  const dataset_div_template = $.templates("#dataset-div");
 
   // Get columns
-  let columns = [
-    $("#search-result-column-1"),
-    $("#search-result-column-2"),
-    $("#search-result-column-3"),
-  ];
-  let min_column = () => {
+
+  const min_column = (dataset_name) => {
+    let columns = [
+      $(`#${dataset_name}-search-result-column-1`),
+      $(`#${dataset_name}-search-result-column-2`),
+      $(`#${dataset_name}-search-result-column-3`),
+    ];
+
     let min_column_id = 0;
     let min_column_height = columns[0].height();
     for (let i = 1; i < 3; i++) {
@@ -47,32 +53,46 @@ function search(parameters, dataset) {
         min_column_height = column_height;
       }
     }
-    return columns[min_column_id]
+    return columns[min_column_id];
   };
 
   // Enter loop
   let count = 0;
-  Object.entries(dataset.step_goals).forEach(([task_id, data]) => {
+  // TODO make this based on parameters
+  Object.entries(datasets_list).forEach(([dset_name, bottlenecks]) => {
     // Check if this is a match
-    if (parameters.category && data.category.indexOf(parameters.category) < 0) {
-      return;
-    }
-    if (parameters.search && data.task.toLowerCase().indexOf(parameters.search) < 0) {
-      return;
-    }
-    if (count >= MAX_COUNT) {
-      return;
-    }
+    // TODO re-add this and edit this later
+    // if (parameters.category && data.category.indexOf(parameters.category) < 0) {
+    //   return;
+    // }
+    // if (
+    //   parameters.search &&
+    //   data.task.toLowerCase().indexOf(parameters.search) < 0
+    // ) {
+    //   return;
+    // }
+    // if (count >= MAX_COUNT) {
+    //   return;
+    // }
+
+    // render dataset div
+    $("#search-results-outer").append(
+      dataset_div_template.render({ dataset_name: dset_name })
+    );
 
     // Is a match, append the rendered html element to the minimum column
-    min_column().append(task_card_template.render({
-      task: data["task"],
-      task_id: task_id,
-      elem_id: `card-${task_id}`,
-    }));
+    bottlenecks.forEach((bot_name) => {
+      min_column(dset_name).append(
+        bottleneck_link_template.render({
+          dataset_name: dset_name,
+          bottleneck_name: bot_name,
+          elem_id: `card-${dset_name}-${bot_name}`,
+        })
+      );
 
-    // Increment the count
-    count += 1;
+      // Increment the count
+      count += 1;
+    });
   });
 
   // Set the search count
@@ -81,9 +101,9 @@ function search(parameters, dataset) {
 }
 
 $(document).ready(function () {
-  load_data(function (dataset) {
-    load_category_select(dataset);
+  load_datasets_list(function (datasets_list) {
+    load_category_select(datasets_list);
     let param = load_search_parameters();
-    search(param, dataset);
+    search(param, datasets_list);
   });
 });

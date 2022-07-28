@@ -71,6 +71,7 @@ footer {
 .card-header {
   display: flex;
   padding-right: 10px;
+  flex-wrap: wrap;
 }
 
 .history-card .card-header {
@@ -81,6 +82,12 @@ footer {
   font-weight: bold;
   font-size: 24px;
   flex: 1;
+}
+
+.classes-card-title {
+  font-weight: bold;
+  font-size: 24px;
+  flex-basis: 100%;
 }
 
 .history-card .card-title {
