@@ -1,11 +1,8 @@
-const MAX_COUNT = 1000;
-
-// TODO change nomenclature
-function load_category_select(datasets_list) {
-  let category_option_template = $.templates("#category-option");
+function load_dataset_select(datasets_list) {
+  let dataset_option_template = $.templates("#dataset-option");
   Object.keys(datasets_list).forEach((dset_name) => {
-    $("#category-select").append(
-      category_option_template.render({
+    $("#dataset-select").append(
+      dataset_option_template.render({
         id: dset_name,
         name: dset_name,
       })
@@ -14,17 +11,17 @@ function load_category_select(datasets_list) {
 }
 
 function load_search_parameters() {
-  let param = { search: null, category: null };
+  let param = { search: null, dataset: null };
   let query_string = window.location.search;
   let url_params = new URLSearchParams(query_string);
   if (url_params.has("search")) {
     param.search = url_params.get("search").toLowerCase();
     $("#search-bar").val(param.search);
   }
-  if (url_params.has("category")) {
-    if (url_params.get("category") != "all") {
-      param.category = parseInt(url_params.get("category"));
-      $("#category-select").val(param.category);
+  if (url_params.has("dataset")) {
+    if (url_params.get("dataset") != "all") {
+      param.dataset = url_params.get("dataset");
+      $("#dataset-select").val(param.dataset);
     }
   }
   return param;
@@ -74,6 +71,7 @@ function search(parameters, datasets_list) {
     // if (count >= MAX_COUNT) {
     //   return;
     // }
+    if (parameters.dataset && dset_name !== parameters.dataset) return;
 
     // render dataset div
     $("#search-results-outer").append(
@@ -82,16 +80,19 @@ function search(parameters, datasets_list) {
 
     // Is a match, append the rendered html element to the minimum column
     bottlenecks.forEach((bot_name) => {
-      min_column(dset_name).append(
-        bottleneck_link_template.render({
-          dataset_name: dset_name,
-          bottleneck_name: bot_name,
-          elem_id: `card-${dset_name}-${bot_name}`,
-        })
-      );
-
-      // Increment the count
-      count += 1;
+      if (
+        !parameters.search ||
+        bot_name.toLowerCase().includes(parameters.search)
+      ) {
+        min_column(dset_name).append(
+          bottleneck_link_template.render({
+            dataset_name: dset_name,
+            bottleneck_name: bot_name,
+            elem_id: `card-${dset_name}-${bot_name}`,
+          })
+        );
+        count++;
+      }
     });
   });
 
@@ -102,7 +103,7 @@ function search(parameters, datasets_list) {
 
 $(document).ready(function () {
   load_datasets_list(function (datasets_list) {
-    load_category_select(datasets_list);
+    load_dataset_select(datasets_list);
     let param = load_search_parameters();
     search(param, datasets_list);
   });

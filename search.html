@@ -13,12 +13,12 @@
   <body>
     <nav>
       <div id="title">
-        <a href="/">Visual Bottleneck Demo - Search</a>
+        <a href="/search.html">Visual Bottleneck Demo - Search</a>
       </div>
       <div class="separator"></div>
       <a class="link" href="/about.html">About</a>
       <div class="separator"></div>
-      <a class="link" href="https://arxiv.org/abs/2203.07264" target="_blank">Paper</a>
+      <a class="link" target="_blank">Paper</a>
       <div class="separator"></div>
       <a class="link" href="/">I'm feeling lucky!</a>
       <div class="separator"></div>
@@ -26,15 +26,15 @@
     <main>
       <form id="search-form" action="search.html">
         <div id="search-form-title">Search for bottlenecks:</div>
-        <select id="category-select" name="category">
-          <option value="all">All Categories</option>
+        <select id="dataset-select" name="dataset">
+          <option value="all">All Datasets</option>
         </select>
         <input id="search-bar" name="search" />
         <button type="submit">Search!</button>
       </form>
       <div id="search-results-outer">
         <!-- new -->
-        <div id="search-message" style="display: none">Showing top <span id="search-item-count">1000</span> results...</div>
+        <div id="search-message" style="display: none">Showing <span id="search-item-count">1000</span> results...</div>
         <!-- <div id="search-results">
           <div class="search-result-column-outer">
             <div class="search-result-column" id="search-result-column-1"></div>
@@ -48,8 +48,8 @@
         </div> -->
       </div>
     </main>
-    <footer>&copy; 2022 Ziyang Li; licensed under CC BY-NC 4.0</footer>
-    <script id="category-option" type="text/x-jsrender">
+    <footer>&copy; Adapted from Ziyang Li; licensed under CC BY-NC 4.0</footer>
+    <script id="dataset-option" type="text/x-jsrender">
       <option value="{{:id}}">{{:name}}</option>
     </script>
     <script id="bottleneck-link" type="text/x-jsrender">
