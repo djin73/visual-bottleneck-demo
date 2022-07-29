@@ -117,6 +117,58 @@
       </div>
     </script>
     <script id="concept-card" type="text/x-jsrender">
+      <div class="card concept-card" id="{{:elem_id}}">
+        <div class="card-left">
+          <div class="card-left-anchor"></div>
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="card-title">{{:title}}</div>
+            <div class="card-id">
+              <div id="concept-label-{{:concept_id}}">{{:concept_id}}</div>
+            </div>
+          </div>
+          <div class="concept-card-body">
+            <!-- <div class="concept-flex-container concept-images">
+              {{for images}}
+                <a class="card-section-caption">
+                  <div class="card-section-caption-title">
+                    <img width=64px src=data/{{:path}}>
+                  </div>
+                </a>
+              {{/for}}
+            </div> -->
+
+            <div class="concept-flex-container tags-container">
+              <div class="tags-header">Tags:</div>
+              {{for tags}}
+                <div class="concept-tag" style="color:{{:tag_color}};border-color:{{:tag_color}}">{{:tag_desc}}</div>
+              {{/for}}
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </script>
+    <script id="ground-truth-card" type="text/x-jsrender">
+      <div class="card">
+        <div class="card-left">
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="card-title">Example images:</div>
+          </div>
+          <div class="concept-flex-container concept-card-body">
+            {{for img_paths}}
+              <div class="card-section-caption-title">
+                <img width=70px src=data/{{:path}}>
+              </div>
+            {{/for}}
+          </div>
+        </div>
+      </div>
+    </script>
+    <script id="concept-details-card" type="text/x-jsrender">
       <div class="card" id="{{:elem_id}}">
         <div class="card-left">
           <div class="card-left-anchor"></div>
@@ -129,32 +181,19 @@
             </div>
           </div>
           <div class="concept-card-body">
-            {{for images}}
-                <a class="card-section-caption">
-                  <div class="card-section-caption-title">
-                    <img width=70px src=data/{{:path}}>
+            <div class="concept-flex-container concept-images">
+              {{for images}}
+                  <div class="container-image-caption">
+                    <img class="details-image" src=data/{{:img_path}}>
+                    <div class="image-caption">
+                      {{:img_class}}
+                    </div>
                   </div>
                 </a>
-            {{/for}}
+              {{/for}}
+            </div>
           </div>
-        </div>
-      </div>
-    </script>
-    <script id="ground-truth-card" type="text/x-jsrender">
-      <div class="card">
-        <div class="card-left">
-        </div>
-        <div class="card-right">
-          <div class="card-header">
-            <div class="card-title">Example images:</div>
-          </div>
-          <div class="concept-card-body">
-            {{for img_paths}}
-              <div class="card-section-caption-title">
-                <img width=70px src=data/{{:path}}>
-              </div>
-            {{/for}}
-          </div>
+          
         </div>
       </div>
     </script>

@@ -5,10 +5,11 @@ $(document).ready(function () {
   const query_string = window.location.search;
   const url_params = new URLSearchParams(query_string);
   let dataset_name = url_params.get("dataset");
-  if (!dataset_name) dataset_name = "flower";
-
   let bottleneck_name = url_params.get("bottleneck");
-  if (!bottleneck_name) bottleneck_name = dataset_name + "1";
+  if (!dataset_name) {
+    dataset_name = "flower";
+    bottleneck_name = "flower_new";
+  }
   load_data(dataset_name, bottleneck_name, (dataset) => {
     let visualizer = new Visualizer();
     initialize(visualizer, dataset);
@@ -44,12 +45,13 @@ class Visualizer {
     this.concept_card_template = $.templates("#concept-card");
     this.ground_truth_card_template = $.templates("#ground-truth-card");
     this.classes_card_template = $.templates("#classes-card");
+    this.concept_details_template = $.templates("#concept-details-card");
   }
 
   visualize(cur_class_id, dataset) {
     $(window).off("resize");
+    $("#left").unbind("scroll");
     $("#middle").unbind("scroll");
-    $("#right").unbind("scroll");
     $("#curr-dataset").text(dataset.dataset_name); //TODO temporary
     // Push history
     const new_url = new URL(window.location.href);
@@ -57,33 +59,36 @@ class Visualizer {
     window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Get the data
-    let data = dataset.get_classes_card_data("middle");
+    let data = dataset.get_classes_card_data("left");
     // let data = dataset.get_card_data(datapoint, "middle");
 
     // Render the object onto the page
-    $("#middle-inner").html(this.classes_card_template.render(data));
+    // $("#middle-inner").html(this.classes_card_template.render(data));
+    $("#left-inner").html(this.classes_card_template.render(data));
+
     // Setup the callbacks
 
     data.classes.forEach(({ class_id, category }) => {
-      $(`#middle-category-${class_id}`).click(() => {
+      $(`#left-category-${class_id}`).click(() => {
         this.visualize(class_id, dataset);
       });
     });
 
     // If the step id is present, directly visualize that step
     if (cur_class_id != null) {
-      this.visualize_step(cur_class_id, dataset);
-    } else {
       $("#right-inner").html("");
-      $("#right-line-canvas").attr("style", "display: none");
+      this.visualize_class(cur_class_id, dataset);
+    } else {
+      $("#middle-inner").html("");
+      $("#left-line-canvas").attr("style", "display: none");
     }
 
     // // If the previous datapoint is present, visualize the parent
     // if (datapoint.parent_datapoint != null) {
     //   this.visualize_parent(datapoint.parent_datapoint, dataset);
-    // } else {
-    $("#left-inner").html("");
-    $("#left-line-canvas").attr("style", "display: none");
+    // // } else {
+    // $("#left-inner").html("");
+    // $("#left-line-canvas").attr("style", "display: none");
     // }
   }
   /*
@@ -162,9 +167,9 @@ class Visualizer {
   }
 */
 
-  visualize_step(class_id, dataset) {
-    // Open the right canvas
-    $("#right-line-canvas").attr("style", "display: block");
+  visualize_class(class_id, dataset) {
+    // Open the middle canvas
+    $("#left-line-canvas").attr("style", "display: block");
 
     // Push history
     const new_url = new URL(window.location.href);
@@ -172,18 +177,18 @@ class Visualizer {
     window.history.replaceState({ path: new_url.href }, "", new_url.href);
 
     // Highlight the step in the left
-    $(`#middle-category-${class_id}`) //TODo was middle-
+    $(`#left-category-${class_id}`) //TODo was middle-
       .addClass("active")
       .siblings()
       .removeClass("active");
 
-    // Clear the right
-    $("#right-inner").html("");
+    // Clear the middle
+    $("#middle-inner").html("");
 
     const cur_class_data = dataset.classes_data[`${class_id}`]; //TODO new
     // add ground truth card
     let cls_name = cur_class_data["name"];
-    $("#right-inner").append(
+    $("#middle-inner").append(
       this.ground_truth_card_template.render({
         img_paths: dataset.class_ground_truth[cls_name].map((url) => {
           return {
@@ -198,42 +203,46 @@ class Visualizer {
     concepts.forEach(([concept_id]) => {
       let data = dataset.get_concept_card_data(
         concept_id,
-        `right-${concept_id}`
+        `middle-${concept_id}`
       );
-      $("#right-inner").append(this.concept_card_template.render(data));
+      $("#middle-inner").append(this.concept_card_template.render(data));
       if (
         dataset.concept_to_prior &&
         dataset.concept_to_prior[concept_id] === parseInt(class_id)
       )
         $(`#concept-label-${concept_id}`).css("color", "red");
+
+      // set up callbacks for each concept detail card
+      $(`#middle-${concept_id}-card`).click(() => {
+        this.visualize_concept(concept_id, class_id, dataset);
+      });
     });
 
     // Setup a scroll callback
     let draw = () => {
-      let svg_elem = $("#right-line-canvas");
+      let svg_elem = $("#left-line-canvas");
       let svg_x = svg_elem.position().left;
       let svg_y = svg_elem.position().top;
 
       // Get d3 svg and clear the canvas
-      let svg = d3.select("#right-line-canvas");
+      let svg = d3.select("#left-line-canvas");
       svg.selectAll("*").remove();
 
-      // Get middle element
-      let middle_elem = $(
-        `#middle-category-${class_id} .card-section-caption-anchor-circle`
+      // Get left element
+      let left_elem = $(
+        `#left-category-${class_id} .card-section-caption-anchor-circle`
       );
-      let middle_elem_position = middle_elem.position();
-      let middle_x =
-        middle_elem_position.left - svg_x + 6 + LINE_CANVAS_PADDING;
-      let middle_y = middle_elem_position.top - svg_y + 6;
+      let left_elem_position = left_elem.position();
+      let left_x = left_elem_position.left - svg_x + 6 + LINE_CANVAS_PADDING;
+      let left_y = left_elem_position.top - svg_y + 6;
 
       // draw lines to each concept
       concepts.forEach(([concept_id, wt]) => {
-        let right_elem = $(`#right-${concept_id}-card .card-left-anchor`);
-        let right_elem_position = right_elem.position();
-        let right_x =
-          right_elem_position.left - svg_x + 6 + LINE_CANVAS_PADDING;
-        let right_y = right_elem_position.top - svg_y + 6;
+        let middle_elem = $(`#middle-${concept_id}-card .card-left-anchor`);
+        let middle_elem_position = middle_elem.position();
+        let middle_x =
+          middle_elem_position.left - svg_x + 6 + LINE_CANVAS_PADDING;
+        let middle_y = middle_elem_position.top - svg_y + 6;
 
         // Draw line
         // svg
@@ -246,24 +255,58 @@ class Visualizer {
         //   .attr("y2", right_y);
 
         // Draw a text
-        let text_y = right_y > middle_y ? right_y + 20 : right_y - 10;
+        let text_y = middle_y > left_y ? middle_y + 20 : middle_y - 10;
         svg
           .append("text")
           .text(`${wt}`.substring(0, 7))
           .style("font-size", "18px")
           .style("font-weight", "bold")
           .style("fill", "red")
-          .attr("x", right_x - 85)
+          .attr("x", middle_x - 85)
           .attr("y", text_y);
       });
     };
     $(window).resize(draw);
-    $("#right").scroll(draw);
     $("#middle").scroll(draw);
+    $("#left").scroll(draw);
     draw();
+  }
+
+  visualize_concept(concept_id, class_id, dataset) {
+    // set new URL
+    const new_url = new URL(window.location.href);
+    new_url.search = `?dataset=${dataset.dataset_name}&bottleneck=${dataset.bottleneck_name}&class_id=${class_id}&concept_id=${concept_id}`;
+    window.history.replaceState({ path: new_url.href }, "", new_url.href);
+
+    // highlight original concept card
+    $(`#middle-${concept_id}-card`)
+      .addClass("selected-card")
+      .siblings()
+      .removeClass("selected-card");
+
+    // clear the right pane and render concept details card
+    $("#right-inner").html("");
+
+    const cur_concept_data = dataset.concepts_data[`${concept_id}`];
+    $("#right-inner").append(
+      this.concept_details_template.render({
+        concept_id: concept_id,
+        elem_id: `${concept_id}-concept-details-card`,
+        title: cur_concept_data["name"],
+        images: cur_concept_data["images_classes"].map(
+          ([img_path, img_class]) => {
+            return {
+              img_path: `${dataset.dataset_name}/images/${img_path}`,
+              img_class: img_class,
+            };
+          }
+        ),
+      })
+    );
   }
 }
 
+//TODO maybe bring datapoint back into use when refactoring?
 class Datapoint {
   constructor(task_id, class_id, parent_datapoint) {
     this.task_id = `${task_id}`;

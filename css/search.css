@@ -53,7 +53,7 @@ footer {
   padding: 10px 0;
 }
 
-#search-results {
+.search-results {
   display: flex;
 }
 

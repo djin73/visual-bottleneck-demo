@@ -78,11 +78,17 @@ class Dataset {
       title: cur_concept["name"],
       elem_id: `${caption_id_prefix}-card`,
       concept_id: concept_id,
-      images: cur_concept["images"].map((img_path) => {
+      images: cur_concept["images_classes"].map(([img_path, img_class]) => {
         return {
           path: `${this.dataset_name}/images/${img_path}`,
+          // TODO add to this
         };
       }),
+      tags: cur_concept["tags"]
+        ? cur_concept["tags"].map(([desc, color]) => {
+            return { tag_desc: desc, tag_color: color };
+          })
+        : [],
     };
   }
 
