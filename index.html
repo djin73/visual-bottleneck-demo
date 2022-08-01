@@ -41,7 +41,6 @@
       <a class="link" href="/">I'm feeling lucky!</a>
       <div class="separator"></div>
       <span>Current Dataset: <span id="curr-dataset"></span></span>
-      <div class="separator"></div>
       <!-- <form id="dataset-form">
         <input name="dataset" placeholder="Jump to dataset..." />
         <button type="submit">Go to</button>
@@ -195,6 +194,12 @@
           </div>
           
         </div>
+      </div>
+    </script>
+    <script id="slider" type="text/x-jsrender">
+      <div class="slider-container">
+        <input type="range" id="concepts-slider" min="0" max={{:max_value}} value={{:max_value}} step="1">
+        <h3>Showing top <span id="num-concepts-shown">{{:max_value}}</span> concepts:</h3>
       </div>
     </script>
     <script src="js/dataset.js"></script>
