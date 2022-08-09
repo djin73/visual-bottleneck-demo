@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Visual Bottleneck Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/basic.css" />
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="vendor/css/font-awesome.min.css" />
+    <script src="vendor/js/jquery.min.js"></script>
+    <script src="vendor/js/jsrender.min.js"></script>
+    <script src="vendor/js/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <div class="mask " id="loading-mask">
+    <!-- <div class="mask active" id="loading-mask"> TODO change-->
+      <div class="mask-inner">
+        <h2 padding="30px"><i class="fa fa-spinner fa-spin"></i>&ThinSpace; Loading</h2>
+        <hr />
+        <p>
+          When you're following instructions, you may want to see more detailed instructions about a step.
+          In the terms of natural language processing, this reflects the hierarchical relationship among procedural events, where each step can have many sub-steps.
+        </p>
+        <p>
+          This web demo accompanies our
+          <a href="https://arxiv.org/abs/2203.07264" target="_blanks">ACL 2022 paper</a>
+          and lets you explore the procedural hierarchy discovered from <a href="www.wikihow.com" target="_blank">wikiHow</a>.
+          You can start with a random procedure by clicking <a href="/">"I'm feeling lucky"</a> or go for a particular one using the search bar.
+          You can expand upon the steps when available to see more detailed instructions, which are predicted by our models with a confidence score.
+        </p>
+      </div>
+    </div>
+    <nav>
+      <div id="title">
+        <a href="/">Visual Bottleneck Demo</a>
+      </div>
+      <div class="separator"></div>
+      <a class="link" href="/about.html">About</a>
+      <div class="separator"></div>
+      <a class="link" target="_blank">Our Paper</a>
+      <div class="separator"></div>
+      <a class="link" href="/">I'm feeling lucky!</a>
+      <div class="separator"></div>
+      <span>Current Dataset: <span id="curr-dataset"></span></span>
+      <!-- <form id="dataset-form">
+        <input name="dataset" placeholder="Jump to dataset..." />
+        <button type="submit">Go to</button>
+      </form> -->
+      <div class="separator"></div>
+      <form id="nav-search-form" method="GET" action="search.html">
+        <input name="search" placeholder="Search for bottlenecks..." />
+        <button type="submit">
+          <i class="fa fa-search"></i>
+        </button>
+      </form>
+    </nav>
+    <main>
+      <svg id="base-canvas"></svg>
+      <div id="left" class="card-column">
+        <div id="left-inner" class="card-column-inner"></div>
+      </div>
+      <svg id="left-line-canvas" class="line-canvas"></svg>
+      <div id="middle" class="card-column">
+        <div id="middle-inner" class="card-column-inner"></div>
+      </div>
+      <svg id="right-line-canvas" class="line-canvas"></svg>
+      <div id="right" class="card-column">
+        <div id="right-inner" class="card-column-inner"></div>
+      </div>
+    </main>
+    <footer>&copy; 2022 Adapated from Ziyang Li; licensed under CC BY-NC 4.0</footer>
+    <script id="history-card" type="text/x-jsrender">
+      <div class="card history-card" id="{{:elem_id}}">
+        <div class="card-right">
+          <div style="margin-bottom: 5px">
+            <i class="fa fa-caret-left"></i>
+            Back
+          </div>
+          <div class="card-header">
+            <div class="card-title">{{:title}}</div>
+            <div class="card-id">
+              <div>{{:task_id}}</div>
+            </div>
+            <div class="card-section-caption-anchor">
+              <span class="card-section-caption-anchor-circle active"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </script>
+    <script id="classes-card" type="text/x-jsrender">
+      <div class="card" id="{{:elem_id}}">
+        <div class="card-left">
+          <div class="card-left-anchor"></div>
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="classes-card-title">Dataset: {{:dataset_name}}</div>
+            <div class="classes-card-title">Bottlenecks: {{:bottleneck_name}}</div>
+          </div>
+          <div class="card-body">
+            <ol class="card-section-captions">{{for classes}}
+              <li id="{{:elem_id}}">
+                <a class="card-section-caption">
+                  <div class="card-section-caption-title">
+                    {{:#index + 1}}. {{:category}}
+                  </div>
+                  <div class="card-section-caption-anchor">
+                    <span class="card-section-caption-anchor-circle active"></span>
+                  </div>
+                </a>
+              </li>
+            {{/for}}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </script>
+    <script id="concept-card" type="text/x-jsrender">
+      <!-- id is of the form middle-[concept_id]-card -->
+      <div class="card concept-card" id="{{:elem_id}}">
+        <div class="card-left">
+          <div class="card-left-anchor"></div>
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="concept-card-title">{{:title}}</div>
+            <div class="card-id">
+              <div id="concept-label-{{:concept_id}}">{{:concept_id}}</div>
+            </div>
+          </div>
+          <div class="concept-card-body">
+            <!-- <div class="concept-flex-container concept-images">
+              {{for images}}
+                <a class="card-section-caption">
+                  <div class="card-section-caption-title">
+                    <img width=64px src=data/{{:path}}>
+                  </div>
+                </a>
+              {{/for}}
+            </div> -->
+
+            <div class="concept-flex-container tags-container">
+              <div class="tags-header">Tags:</div>
+              {{for tags}}
+                <div class="concept-tag" style="color:{{:tag_color}};border-color:{{:tag_color}}">{{:tag_desc}}</div>
+              {{/for}}
+            </div>
+            <div class="annotations-container">
+              <div class="tags-header">Annotations</div>
+              <input type="checkbox" id="{{:concept_id}}-annotation-incorrect-map" id="{{:concept_id}}-annotation-incorrect-map">
+              <label for="{{:concept_id}}-annotation-incorrect-map">Concept incorrectly maps to category</label>
+              <input type="checkbox" id="{{:concept_id}}-annotation-incorrect-ground" id="{{:concept_id}}-annotation-incorrect-ground">
+              <label for="{{:concept_id}}-annotation-incorrect-ground">Concepts doesn't correctly ground to images</label>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </script>
+    <script id="ground-truth-card" type="text/x-jsrender">
+      <div class="card">
+        <div class="card-left">
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="card-title">Example images:</div>
+          </div>
+          <div class="concept-flex-container concept-card-body">
+            {{for img_paths}}
+              <div class="card-section-caption-title">
+                <img width=70px src=data/{{:path}}>
+              </div>
+            {{/for}}
+          </div>
+        </div>
+      </div>
+    </script>
+    <script id="concept-details-card" type="text/x-jsrender">
+      <div class="card" id="{{:elem_id}}">
+        <div class="card-left">
+          <div class="card-left-anchor"></div>
+        </div>
+        <div class="card-right">
+          <div class="card-header">
+            <div class="card-title">{{:title}}</div>
+            <div class="card-id">
+              <div id="concept-label-{{:concept_id}}">{{:concept_id}}</div>
+            </div>
+          </div>
+          <div class="concept-card-body">
+            <div class="concept-flex-container concept-images">
+              {{for images}}
+                  <div class="container-image-caption">
+                    <img class="details-image" src=data/{{:img_path}}>
+                    <div class="image-caption">
+                      {{:img_class}}
+                    </div>
+                  </div>
+                </a>
+              {{/for}}
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </script>
+    <script id="slider" type="text/x-jsrender">
+      <div class="slider-container">
+        <h3>Showing top <span id="num-concepts-shown">{{:max_value}}</span> concepts:<br> (use slider to adjust)</h3>
+        <input type="range" id="concepts-slider" min="0" max={{:max_value}} value={{:max_value}} step="1">
+      </div>
+    </script>
+    <script src="js/dataset.js"></script>
+    <script src="js/index.js"></script>
+  </body>
+</html>
