@@ -334,7 +334,7 @@ footer {
   width: 100%;
 }
 
-#annotations-button {
+.annotations-button {
   font-size: 18px;
   font-weight: bold;
   margin: 12px auto;

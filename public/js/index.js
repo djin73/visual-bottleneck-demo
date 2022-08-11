@@ -104,12 +104,16 @@ class Visualizer {
       })
     );
 
+    $("#middle-inner").append(
+      `<button id="download-button" class="annotations-button">Download All Annotations</button>`
+    );
     // add save annotations button
     $("#middle-inner").append(
-      `<button id="annotations-button">Save Annotations</button>`
+      `<button id="save-button" class="annotations-button">Save Annotations</button>`
     );
+
     // save annotations handler
-    $("#annotations-button").click(() => {
+    $("#save-button").click(() => {
       $.ajax({
         method: "PUT",
         url: `/save-annotations/${dataset.dataset_name}/${dataset.bottleneck_name}/${class_id}`,
@@ -125,6 +129,31 @@ class Visualizer {
           alert("An error occurred when saving annotations.");
         }
       });
+    });
+
+    // download annotations handler
+    $("#download-button").click(() => {
+      $.get(
+        `/download-annotations/${dataset.dataset_name}/${dataset.bottleneck_name}`,
+        ({ data, success }) => {
+          if (success) {
+            const blob = new Blob([JSON.stringify(data)], {
+              type: "application/json",
+            });
+            saveAs(
+              blob,
+              `${dataset.dataset_name}-${
+                dataset.bottleneck_name
+              }-annotations-${new Date().toISOString()}.json`
+            );
+          } else {
+            console.error(data);
+            alert(
+              "An error occurred while trying to download annotations; try again."
+            );
+          }
+        }
+      );
     });
 
     // render and set up slider
@@ -217,7 +246,7 @@ class Visualizer {
     // get annotations data and render appropriately, if it exists
     $.get(
       `/get-annotations/${dataset.dataset_name}/${dataset.bottleneck_name}/${class_id}`,
-      (data) => {
+      ({ data, err }) => {
         if (data) {
           data["concepts"].forEach(({ concept_id, annotations }) => {
             $(`#${concept_id}-annotation-incorrect-map`).prop(
@@ -229,6 +258,9 @@ class Visualizer {
               annotations.includes(1)
             );
           });
+        } else if (err) {
+          console.error(err);
+          alert("An error occurred trying to retrieve annotation data");
         }
       }
     );

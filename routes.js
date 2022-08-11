@@ -7,12 +7,6 @@ const router = express.Router();
 router.put(
   "/save-annotations/:dataset/:bottleneck/:class",
   async (req, res) => {
-    // const edited_data = edit_annotations(
-    //   req.body,
-    //   req.params.dataset,
-    //   req.params.bottleneck
-    // );
-
     try {
       await db.update_annotations(
         req.params.dataset,
@@ -28,34 +22,51 @@ router.put(
 );
 
 router.get("/get-annotations/:dataset/:bottleneck/:class", async (req, res) => {
-  const db_result = await db.get_annotations_for_class(
-    req.params.dataset,
-    req.params.bottleneck,
-    parseInt(req.params.class)
-  );
-  res.send(db_result);
+  try {
+    const db_result = await db.get_annotations_for_class(
+      req.params.dataset,
+      req.params.bottleneck,
+      parseInt(req.params.class)
+    );
+    res.send({ data: db_result, err: null });
+    // if nothing matches, db_result should be null
+  } catch (e) {
+    res.send({ data: null, err: e });
+  }
 });
 
-const edit_annotations = function (
-  new_annotations,
-  dataset_name,
-  bottleneck_name
-) {
-  let annotations = JSON.parse(
-    fs.readFileSync(
-      `public/data/${dataset_name}/${bottleneck_name}/concept_annotations.json`
-    )
-  );
-  for (concept_id in new_annotations) {
-    annotations[concept_id] = new_annotations[concept_id].map(
-      (str) => str === "true" // needed to fix bug with 'true' instead of true
+router.get("/download-annotations/:dataset/:bottleneck", async (req, res) => {
+  try {
+    const db_triplets = await db.get_all_annotations_for_bottleneck(
+      req.params.dataset,
+      req.params.bottleneck
     );
+    res.send({ data: db_triplets, success: true });
+  } catch (e) {
+    res.send({ data: e, success: false });
   }
-  fs.writeFileSync(
-    `public/data/${dataset_name}/${bottleneck_name}/concept_annotations.json`,
-    JSON.stringify(annotations)
-  );
-  return annotations;
-};
+});
 
 module.exports = router;
+
+// const edit_annotations = function (
+//   new_annotations,
+//   dataset_name,
+//   bottleneck_name
+// ) {
+//   let annotations = JSON.parse(
+//     fs.readFileSync(
+//       `public/data/${dataset_name}/${bottleneck_name}/concept_annotations.json`
+//     )
+//   );
+//   for (concept_id in new_annotations) {
+//     annotations[concept_id] = new_annotations[concept_id].map(
+//       (str) => str === "true" // needed to fix bug with 'true' instead of true
+//     );
+//   }
+//   fs.writeFileSync(
+//     `public/data/${dataset_name}/${bottleneck_name}/concept_annotations.json`,
+//     JSON.stringify(annotations)
+//   );
+//   return annotations;
+// };

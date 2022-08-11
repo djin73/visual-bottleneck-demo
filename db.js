@@ -1,4 +1,6 @@
 // methods for querying MongoDB database
+
+const constants = require("./constants.js");
 const env = require("dotenv");
 const { MongoClient } = require("mongodb");
 
@@ -22,9 +24,7 @@ const get_annotations_for_class = async (
       concepts: 1,
     },
   };
-  console.log("query", query);
   const concept_annotations = await classes_annotations.findOne(query, options);
-  console.log(concept_annotations);
   return concept_annotations;
 };
 
@@ -42,16 +42,39 @@ const update_annotations = async (
       concepts: new_concepts,
     },
   };
-  const res = await classes_annotations.updateOne(filter, updateDoc, options);
+  await classes_annotations.updateOne(filter, updateDoc, options);
 };
 
-// run().catch(console.dir);
-// console.log(get_annotations_for_class("flower", "flower_new", 0)); // this prints pending promise
-// update_annotations("flower", "flower_new", 1, [
-//   { concept_id: 308, annotations: [0, 1] },
-//   { concept_id: 50, annotations: [0, 1] },
-//   { concept_id: 2990, annotations: [0, 1] },
-// ]);
-// get_annotations("flower", "flower_new", 0);
+const get_all_annotations_for_bottleneck = async (
+  dataset_name,
+  bottleneck_name
+) => {
+  const query = { dataset_name, bottleneck_name };
+  const options = {
+    projection: {
+      _id: 0,
+      class_id: 1,
+      concepts: 1,
+    },
+  };
+  const classes = await classes_annotations.find(query, options).toArray();
+  const triplets = classes.flatMap(({ class_id, concepts }) => {
+    // below: return array of triplets corresponding to this class
+    return concepts.flatMap(({ concept_id, annotations }) => {
+      // below: return array of triplets corresponding to this concept
+      return annotations.map((annot_int) => [
+        class_id,
+        concept_id,
+        constants.annotation_map[annot_int],
+      ]);
+    });
+  });
+  return triplets;
+  // data format: [category, concept, annotation] triplets
+};
 
-module.exports = { get_annotations_for_class, update_annotations };
+module.exports = {
+  get_annotations_for_class,
+  update_annotations,
+  get_all_annotations_for_bottleneck,
+};
