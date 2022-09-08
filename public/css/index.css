@@ -164,6 +164,7 @@ footer {
 
 .tags-container {
   align-items: center;
+  margin: 8px 0;
 }
 
 .tags-header {
@@ -337,10 +338,37 @@ footer {
 .annotations-button {
   font-size: 18px;
   font-weight: bold;
-  margin: 12px auto;
+  margin: 10px auto;
   padding: 12px;
 }
 
 .slider-container {
   width: 100%;
+}
+
+.annotations-button-caption {
+  text-align: center;
+  width: 400px;
+}
+
+.textbox-group {
+  margin: 4px;
+}
+
+.text-annotation {
+  margin: 4px 0;
+  display: block;
+  width: 80%;
+  resize: vertical;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.edited-concept-title {
+  border: 1px solid gray;
+  width: 80%;
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 4px;
+  background-color: #f3f3f3;
 }

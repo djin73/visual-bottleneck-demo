@@ -104,9 +104,15 @@ class Visualizer {
       })
     );
 
+    // add download annotations button
     $("#middle-inner").append(
       `<button id="download-button" class="annotations-button">Download All Annotations</button>`
     );
+
+    $("#middle-inner").append(
+      `<p class="annotations-button-caption">(Make sure to save annotations for each modified class before downloading!)</p>`
+    );
+
     // add save annotations button
     $("#middle-inner").append(
       `<button id="save-button" class="annotations-button">Save Annotations</button>`
@@ -256,7 +262,14 @@ class Visualizer {
             $(`#${concept_id}-annotation-incorrect-ground`).prop(
               "checked",
               annotations.includes(1)
+            ); // check checkboxes if needed
+
+            let stringAnnotation = annotations.find(
+              (elem) => typeof elem === "string"
             );
+            if (stringAnnotation) {
+              $(`#${concept_id}-text-annotation`).html(stringAnnotation);
+            }
           });
         } else if (err) {
           console.error(err);
@@ -343,9 +356,13 @@ class Visualizer {
         $(`#${concept_id}-annotation-incorrect-map`).is(":checked"),
         $(`#${concept_id}-annotation-incorrect-ground`).is(":checked"),
       ];
+      const text_annotation = $(`#${concept_id}-text-annotation`).val();
+      const text_annotation_arr = text_annotation ? [text_annotation] : [];
       return {
         concept_id: concept_id,
-        annotations: checked_bool_arr.flatMap((bool, idx) => (bool ? idx : [])),
+        annotations: checked_bool_arr
+          .flatMap((bool, idx) => (bool ? idx : []))
+          .concat(text_annotation_arr),
       };
     });
   }
