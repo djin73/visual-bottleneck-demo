@@ -1,4 +1,5 @@
 const express = require("express");
+const { PythonShell } = require("python-shell");
 const fs = require("fs");
 const db = require("./db.js");
 const router = express.Router();
@@ -47,26 +48,19 @@ router.get("/download-annotations/:dataset/:bottleneck", async (req, res) => {
   }
 });
 
-module.exports = router;
+router.get("/get-datasets-bottlenecks", (req, res) => {
+  // TODO EDIT PYTHON PATH IF NEEDED
+  const shell = new PythonShell("get_datasets_bottlenecks.py", {
+    mode: "json",
+    pythonPath: "/Users/danieljin/opt/anaconda3/bin/python",
+  });
 
-// const edit_annotations = function (
-//   new_annotations,
-//   dataset_name,
-//   bottleneck_name
-// ) {
-//   let annotations = JSON.parse(
-//     fs.readFileSync(
-//       `public/data/${dataset_name}/${bottleneck_name}/concept_annotations.json`
-//     )
-//   );
-//   for (concept_id in new_annotations) {
-//     annotations[concept_id] = new_annotations[concept_id].map(
-//       (str) => str === "true" // needed to fix bug with 'true' instead of true
-//     );
-//   }
-//   fs.writeFileSync(
-//     `public/data/${dataset_name}/${bottleneck_name}/concept_annotations.json`,
-//     JSON.stringify(annotations)
-//   );
-//   return annotations;
-// };
+  shell.on("message", (message) => {
+    res.send({ success: true, data: message });
+  });
+  shell.end((err) => {
+    if (err) res.send({ success: false, data: err });
+  });
+});
+
+module.exports = router;

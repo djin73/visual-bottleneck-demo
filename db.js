@@ -60,13 +60,22 @@ const get_all_annotations_for_bottleneck = async (
   const classes = await classes_annotations.find(query, options).toArray();
   const triplets = classes.flatMap(({ class_id, concepts }) => {
     // below: return array of triplets corresponding to this class
-    return concepts.flatMap(({ concept_id, annotations }) => {
+    return concepts.flatMap(({ concept_id, annotations, edited_name }) => {
       // below: return array of triplets corresponding to this concept
-      return annotations.map((annot_int) => [
-        class_id,
-        concept_id,
-        constants.annotation_map[annot_int],
-      ]);
+      let annotations_without_edit = annotations.map((annot) => {
+        const actual_annot =
+          typeof annot === "number" ? constants.annotation_map[annot] : annot;
+        console.log(concept_id, annot, actual_annot);
+        return [class_id, concept_id, actual_annot];
+      });
+      if (edited_name) {
+        annotations_without_edit.push([
+          class_id,
+          concept_id,
+          `EDITED NAME: ${edited_name}`,
+        ]);
+      }
+      return annotations_without_edit;
     });
   });
   return triplets;

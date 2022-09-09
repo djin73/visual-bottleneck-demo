@@ -110,7 +110,7 @@ class Visualizer {
     );
 
     $("#middle-inner").append(
-      `<p class="annotations-button-caption">(Make sure to save annotations for each modified class before downloading!)</p>`
+      `<p class="annotations-button-caption">(Make sure to save annotations for <b>every modified class</b> before downloading!)</p>`
     );
 
     // add save annotations button
@@ -238,15 +238,46 @@ class Visualizer {
         this.visualize_concept(concept_id, class_id, dataset);
       });
 
-      // // check the checkboxes if needed
-      // $(`#${concept_id}-annotation-incorrect-map`).prop(
-      //   "checked",
-      //   dataset.concept_annotations[concept_id][0]
-      // );
-      // $(`#${concept_id}-annotation-incorrect-ground`).prop(
-      //   "checked",
-      //   dataset.concept_annotations[concept_id][1]
-      // );
+      // edit name handler
+      $(`#${concept_id}-edit-name-button`).click(() => {
+        const current_edited_name = $(`#${concept_id}-new-name`).html() ?? "";
+        $(`#${concept_id}-edit-name-container`).prepend(
+          `<textarea id="${concept_id}-new-name-textarea" class="text-annotation">${current_edited_name}</textarea>`
+        );
+        $(`#${concept_id}-edit-name-button`).toggle();
+        $(`#${concept_id}-save-name-button`).toggle();
+        $(`#${concept_id}-edited-name`).remove();
+
+        // $.ajax({
+        //   method: "PUT",
+        //   url: `/save-annotations/${dataset.dataset_name}/${dataset.bottleneck_name}/${class_id}`,
+        //   data: JSON.stringify({
+        //     new_concepts: this.get_current_annotations(concepts),
+        //   }),
+        //   traditional: true,
+        //   contentType: "application/json",
+        // }).done(({ success }) => {
+        //   if (success) {
+        //     alert("Annotations saved!");
+        //   } else {
+        //     alert("An error occurred when saving annotations.");
+        //   }
+        // });
+      });
+
+      // save name handler
+      $(`#${concept_id}-save-name-button`).click(() => {
+        const new_name = $(`#${concept_id}-new-name-textarea`).val();
+        $(`#${concept_id}-new-name-textarea`).remove();
+        if (new_name)
+          $(`#${concept_id}-edit-name-container`).prepend(
+            `<div id="${concept_id}-edited-name" class="edited-concept-title"><b>Edited name: </b><span id=${concept_id}-new-name>${new_name}</span></div>`
+          );
+
+        $(`#${concept_id}-edit-name-button`).toggle();
+        $(`#${concept_id}-save-name-button`).toggle();
+      });
+      $(`#${concept_id}-save-name-button`).toggle();
     });
 
     // get annotations data and render appropriately, if it exists
@@ -254,23 +285,33 @@ class Visualizer {
       `/get-annotations/${dataset.dataset_name}/${dataset.bottleneck_name}/${class_id}`,
       ({ data, err }) => {
         if (data) {
-          data["concepts"].forEach(({ concept_id, annotations }) => {
-            $(`#${concept_id}-annotation-incorrect-map`).prop(
-              "checked",
-              annotations.includes(0)
-            );
-            $(`#${concept_id}-annotation-incorrect-ground`).prop(
-              "checked",
-              annotations.includes(1)
-            ); // check checkboxes if needed
+          data["concepts"].forEach(
+            ({ concept_id, annotations, edited_name }) => {
+              $(`#${concept_id}-annotation-incorrect-map`).prop(
+                "checked",
+                annotations.includes(0)
+              );
+              $(`#${concept_id}-annotation-incorrect-ground`).prop(
+                "checked",
+                annotations.includes(1)
+              ); // check checkboxes if needed
 
-            let stringAnnotation = annotations.find(
-              (elem) => typeof elem === "string"
-            );
-            if (stringAnnotation) {
-              $(`#${concept_id}-text-annotation`).html(stringAnnotation);
+              // render textbox annotation
+              let stringAnnotation = annotations.find(
+                (elem) => typeof elem === "string"
+              );
+              if (stringAnnotation) {
+                $(`#${concept_id}-text-annotation`).html(stringAnnotation);
+              }
+
+              // render edited names
+              if (edited_name) {
+                $(`#${concept_id}-edit-name-container`).prepend(
+                  `<div id="${concept_id}-edited-name" class="edited-concept-title"><b>Edited name: </b><span id=${concept_id}-new-name>${edited_name}</span></div>`
+                );
+              }
             }
-          });
+          );
         } else if (err) {
           console.error(err);
           alert("An error occurred trying to retrieve annotation data");
@@ -320,16 +361,6 @@ class Visualizer {
           middle_elem_position.left - svg_x + 6 + LINE_CANVAS_PADDING;
         let middle_y = middle_elem_position.top - svg_y + 6;
 
-        // Draw line
-        // svg
-        //   .append("line")
-        //   .style("stroke", "red")
-        //   .style("stroke-width", 2)
-        //   .attr("x1", middle_x)
-        //   .attr("y1", middle_y)
-        //   .attr("x2", right_x)
-        //   .attr("y2", right_y);
-
         // Draw a text
         let text_y = middle_y > left_y ? middle_y + 20 : middle_y - 10;
         svg
@@ -358,11 +389,18 @@ class Visualizer {
       ];
       const text_annotation = $(`#${concept_id}-text-annotation`).val();
       const text_annotation_arr = text_annotation ? [text_annotation] : [];
+
+      // get edited name (either saved or not)
+      const edited_name =
+        $(`#${concept_id}-new-name`).html() ||
+        $(`#${concept_id}-new-name-textarea`).val();
+
       return {
         concept_id: concept_id,
         annotations: checked_bool_arr
           .flatMap((bool, idx) => (bool ? idx : []))
           .concat(text_annotation_arr),
+        ...(edited_name && { edited_name }), // include edited_name if not falsy
       };
     });
   }

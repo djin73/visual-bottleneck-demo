@@ -130,10 +130,10 @@
             </div>
           </div>
           <div class="concept-card-body">
-            <!-- <div>TODO
-              <div class="edited-concept-title">Edited concept: </div>
+            <div id="{{:concept_id}}-edit-name-container" class="edit-name-container">
               <button id="{{:concept_id}}-edit-name-button">Edit concept name</button>
-            </div> -->
+              <button id="{{:concept_id}}-save-name-button">Save concept name</button>
+            </div>
             <div class="concept-flex-container tags-container">
               <div class="tags-header">Tags:</div>
               {{for tags}}
@@ -194,7 +194,7 @@
             <div class="concept-flex-container concept-images">
               {{for images}}
                   <div class="container-image-caption">
-                    <img class="details-image" src=data/{{:img_path}}>
+                    <img class="details-image" src="https://visual-bottleneck-data.s3.amazonaws.com/{{:img_path}}">
                     <div class="image-caption">
                       {{:img_class}}
                     </div>

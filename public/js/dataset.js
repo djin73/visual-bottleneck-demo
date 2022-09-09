@@ -1,46 +1,44 @@
 function load_data(dataset_name, bottleneck_name, callback) {
+  // $.getJSON(
+  //   `data/${dataset_name}/${bottleneck_name}/concept_annotations.json`,
+  //   (concept_annotations) => {
+  // $.getJSON(
+  //   "https://visual-bottleneck-data.s3.amazonaws.com/datasets_and_bottlenecks.json",
+  //   (datasets_list) => {
+
   $.getJSON(
-    `data/${dataset_name}/${bottleneck_name}/concept_annotations.json`,
-    (concept_annotations) => {
-      $.getJSON("data/datasets_and_bottlenecks.json", (datasets_list) => {
-        $.getJSON(
-          `data/${dataset_name}/${bottleneck_name}/class_to_truth.json`,
-          function (class_ground_truth) {
-            $.getJSON(
-              `data/${dataset_name}/${bottleneck_name}/classes.json`,
-              function (classes_data) {
-                $.getJSON(
-                  `data/${dataset_name}/${bottleneck_name}/concepts.json`,
-                  function (concepts_data) {
-                    let concept_to_prior = null;
-                    $.getJSON(
-                      `data/${dataset_name}/${bottleneck_name}/concept2cls_prior.json`
+    `https://visual-bottleneck-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/class_to_truth.json`,
+    function (class_ground_truth) {
+      $.getJSON(
+        `https://visual-bottleneck-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/classes.json`,
+        function (classes_data) {
+          $.getJSON(
+            `https://visual-bottleneck-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/concepts.json`,
+            function (concepts_data) {
+              let concept_to_prior = null;
+              $.getJSON(
+                `https://visual-bottleneck-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/concept2cls_prior.json`
+              )
+                .done((prior_data) => {
+                  concept_to_prior = prior_data;
+                })
+                .fail(() => console.log("prior data does not exist"))
+                .always(() => {
+                  callback(
+                    new Dataset(
+                      class_ground_truth,
+                      classes_data,
+                      concepts_data,
+                      concept_to_prior,
+                      dataset_name,
+                      bottleneck_name
                     )
-                      .done((prior_data) => {
-                        concept_to_prior = prior_data;
-                      })
-                      .fail(() => console.log("prior data does not exist"))
-                      .always(() => {
-                        callback(
-                          new Dataset(
-                            datasets_list,
-                            class_ground_truth,
-                            classes_data,
-                            concepts_data,
-                            concept_to_prior,
-                            dataset_name,
-                            bottleneck_name,
-                            concept_annotations
-                          )
-                        );
-                      });
-                  }
-                );
-              }
-            );
-          }
-        );
-      });
+                  );
+                });
+            }
+          );
+        }
+      );
     }
   );
 }
@@ -52,23 +50,19 @@ const load_datasets_list = (callback) => {
 
 class Dataset {
   constructor(
-    datasets_list,
     class_ground_truth,
     classes_data,
     concepts_data,
     concept_to_prior,
     dataset_name,
-    bottleneck_name,
-    concept_annotations
+    bottleneck_name
   ) {
-    this.datasets_list = datasets_list;
     this.class_ground_truth = class_ground_truth;
     this.classes_data = classes_data;
     this.concepts_data = concepts_data;
     this.concept_to_prior = concept_to_prior;
     this.dataset_name = dataset_name; // TODO change?
     this.bottleneck_name = bottleneck_name;
-    this.concept_annotations = concept_annotations;
     // TODO remove
     if (concept_to_prior) {
       for (const class_id in classes_data) {

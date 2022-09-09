@@ -369,6 +369,10 @@ footer {
   width: 80%;
   border-radius: 8px;
   padding: 4px;
-  margin-bottom: 4px;
-  background-color: #f3f3f3;
+  margin: 4px 0;
+  background-color: #f9f9f9;
+}
+
+.edit-name-container {
+  margin: 4px 0;
 }

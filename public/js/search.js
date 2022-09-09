@@ -102,9 +102,16 @@ function search(parameters, datasets_list) {
 }
 
 $(document).ready(function () {
-  load_datasets_list(function (datasets_list) {
-    load_dataset_select(datasets_list);
-    let param = load_search_parameters();
-    search(param, datasets_list);
+  $.get("/get-datasets-bottlenecks", ({ data, success }) => {
+    if (success) {
+      load_dataset_select(data);
+      const param = load_search_parameters();
+      search(param, data);
+    } else {
+      console.error(data);
+      alert(
+        "An error occurred while trying to retrieve list of datasets and bottlenecks; try again."
+      );
+    }
   });
 });
