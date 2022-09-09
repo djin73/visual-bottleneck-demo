@@ -3,6 +3,9 @@ const { PythonShell } = require("python-shell");
 const fs = require("fs");
 const db = require("./db.js");
 const router = express.Router();
+const env = require("dotenv");
+
+env.config();
 
 // TODO look into error handling?
 router.put(
@@ -49,10 +52,10 @@ router.get("/download-annotations/:dataset/:bottleneck", async (req, res) => {
 });
 
 router.get("/get-datasets-bottlenecks", (req, res) => {
-  // TODO EDIT PYTHON PATH IF NEEDED
+  // TODO EDIT PYTHON PATH IN .env
   const shell = new PythonShell("get_datasets_bottlenecks.py", {
     mode: "json",
-    pythonPath: "/Users/danieljin/opt/anaconda3/bin/python",
+    pythonPath: process.env.PYTHON_PATH,
   });
 
   shell.on("message", (message) => {
