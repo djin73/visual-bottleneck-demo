@@ -65,7 +65,6 @@ const get_all_annotations_for_bottleneck = async (
       let annotations_without_edit = annotations.map((annot) => {
         const actual_annot =
           typeof annot === "number" ? constants.annotation_map[annot] : annot;
-        console.log(concept_id, annot, actual_annot);
         return [class_id, concept_id, actual_annot];
       });
       if (edited_name) {

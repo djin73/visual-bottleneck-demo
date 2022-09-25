@@ -5,7 +5,9 @@ import s3fs
 load_dotenv()
 
 fs = s3fs.S3FileSystem(anon=False)
-datasets = fs.ls("visual-bottleneck-data")  # e.g. ['visual-bottleneck-data/flower']
+datasets = fs.ls(
+    "visual-bottleneck-demo-data"
+)  # e.g. ['visual-bottleneck-demo-data/flower']
 datasets_and_bottlenecks = {
     dataset.split("/")[-1]: [
         bottleneck.split("/")[-1]

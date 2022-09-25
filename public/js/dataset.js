@@ -1,23 +1,16 @@
 function load_data(dataset_name, bottleneck_name, callback) {
-  // $.getJSON(
-  //   `data/${dataset_name}/${bottleneck_name}/concept_annotations.json`,
-  //   (concept_annotations) => {
-  // $.getJSON(
-  //   "https://visual-bottleneck-data.s3.amazonaws.com/datasets_and_bottlenecks.json",
-  //   (datasets_list) => {
-
   $.getJSON(
-    `https://visual-bottleneck-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/class_to_truth.json`,
+    `https://visual-bottleneck-demo-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/class_to_truth.json`,
     function (class_ground_truth) {
       $.getJSON(
-        `https://visual-bottleneck-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/classes.json`,
+        `https://visual-bottleneck-demo-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/classes.json`,
         function (classes_data) {
           $.getJSON(
-            `https://visual-bottleneck-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/concepts.json`,
+            `https://visual-bottleneck-demo-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/concepts.json`,
             function (concepts_data) {
               let concept_to_prior = null;
               $.getJSON(
-                `https://visual-bottleneck-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/concept2cls_prior.json`
+                `https://visual-bottleneck-demo-data.s3.amazonaws.com/${dataset_name}/${bottleneck_name}/concept2cls_prior.json`
               )
                 .done((prior_data) => {
                   concept_to_prior = prior_data;
@@ -63,15 +56,6 @@ class Dataset {
     this.concept_to_prior = concept_to_prior;
     this.dataset_name = dataset_name; // TODO change?
     this.bottleneck_name = bottleneck_name;
-    // TODO remove
-    if (concept_to_prior) {
-      for (const class_id in classes_data) {
-        classes_data[class_id]["concepts"].forEach(([concept_id]) => {
-          if (concept_to_prior[concept_id] === parseInt(class_id))
-            console.log(class_id, concept_id);
-        });
-      }
-    }
   }
 
   get_concept_card_data(concept_id, caption_id_prefix) {
