@@ -1,5 +1,14 @@
 const express = require("express");
 const { PythonShell } = require("python-shell");
+let options = {
+    args : []
+}
+PythonShell.run('./install_package.py', options, 
+    function(err, results)
+    {
+        if (err) throw err;
+        else console.log(results);
+    })
 const fs = require("fs");
 const db = require("./db.js");
 const router = express.Router();
@@ -64,6 +73,10 @@ router.get("/get-datasets-bottlenecks", (req, res) => {
   shell.end((err) => {
     if (err) res.send({ success: false, data: err });
   });
+});
+
+router.get("/", async (req, res) => {
+  res.render('public/search.html')
 });
 
 module.exports = router;

@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 
 const app = express();
-const port = 80;
+const port = 88;
 
 dotenv.config();
 

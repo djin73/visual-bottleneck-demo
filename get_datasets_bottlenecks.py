@@ -1,8 +1,10 @@
-from dotenv import load_dotenv
+import sys
 import json
-import s3fs
+import s3fs as s3fs
+from dotenv import load_dotenv
 
 load_dotenv()
+
 
 fs = s3fs.S3FileSystem(anon=False)
 datasets = fs.ls(
@@ -18,3 +20,6 @@ datasets_and_bottlenecks = {
 }
 
 print(json.dumps(datasets_and_bottlenecks))
+
+
+
