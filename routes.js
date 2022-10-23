@@ -79,4 +79,19 @@ router.get("/", async (req, res) => {
   res.render('public/search.html')
 });
 
+router.get("/get-random-dataset-bottleneck", (req, res) => {
+  // TODO EDIT PYTHON PATH IN .env
+  const shell = new PythonShell("get_random_bottleneck.py", {
+    mode: "json",
+    pythonPath: process.env.PYTHON_PATH,
+  });
+
+  shell.on("message", (message) => {
+    res.send({ success: true, data: message });
+  });
+  shell.end((err) => {
+    if (err) res.send({ success: false, data: err });
+  });
+});
+
 module.exports = router;
