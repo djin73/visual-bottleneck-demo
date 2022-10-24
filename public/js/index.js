@@ -128,8 +128,7 @@ $(document).ready(function () {
 $(document).ready(function () {
   $.get("/get-random-dataset-bottleneck", ({ data, success }) => {
     if (success) {
-      $('#dummy-lucky').hide();
-       $("#random-bottleneck").append('<a class="link" href="/'+data[0]+'">I\'m feeling lucky!</a>')
+      $("#random-bottleneck").attr("href", '/'+data[0]);
     } else {
       console.error(data);
       alert(
