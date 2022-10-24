@@ -104,64 +104,6 @@ class Visualizer {
       })
     );
 
-    // add download annotations button
-    $("#middle-inner").append(
-      `<button id="download-button" class="annotations-button">Download All Annotations</button>`
-    );
-
-    $("#middle-inner").append(
-      `<p class="annotations-button-caption">(Make sure to save annotations for <b>every modified class</b> before downloading!)</p>`
-    );
-
-    // add save annotations button
-    $("#middle-inner").append(
-      `<button id="save-button" class="annotations-button">Save Annotations</button>`
-    );
-
-    // save annotations handler
-    $("#save-button").click(() => {
-      $.ajax({
-        method: "PUT",
-        url: `/save-annotations/${dataset.dataset_name}/${dataset.bottleneck_name}/${class_id}`,
-        data: JSON.stringify({
-          new_concepts: this.get_current_annotations(concepts),
-        }),
-        traditional: true,
-        contentType: "application/json",
-      }).done(({ success }) => {
-        if (success) {
-          alert("Annotations saved!");
-        } else {
-          alert("An error occurred when saving annotations.");
-        }
-      });
-    });
-
-    // download annotations handler
-    $("#download-button").click(() => {
-      $.get(
-        `/download-annotations/${dataset.dataset_name}/${dataset.bottleneck_name}`,
-        ({ data, success }) => {
-          if (success) {
-            const blob = new Blob([JSON.stringify(data)], {
-              type: "application/json",
-            });
-            saveAs(
-              blob,
-              `${dataset.dataset_name}-${
-                dataset.bottleneck_name
-              }-annotations-${new Date().toISOString()}.json`
-            );
-          } else {
-            console.error(data);
-            alert(
-              "An error occurred while trying to download annotations; try again."
-            );
-          }
-        }
-      );
-    });
-
     // render and set up slider
     $("#middle-inner").append(
       this.slider_template.render({
